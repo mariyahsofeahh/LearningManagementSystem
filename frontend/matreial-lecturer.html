@@ -1,219 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>LMS - Manage Materials</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer - Manage Materials</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .upload-zone {
+            border: 2px dashed #0d6efd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: 0.3s;
+        }
+        .upload-zone:hover { background: #e9ecef; cursor: pointer; }
+    </style>
 </head>
 <body class="bg-light">
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-dark bg-success px-4 d-flex justify-content-between">
-    <span class="navbar-brand fw-bold">📁 Learning Materials — Lecturer View</span>
-    <a href="dashboard.html" class="btn btn-outline-light btn-sm">← Back to Dashboard</a>
-  </nav>
-
-  <div class="container mt-4">
-
-    <!-- Upload Form -->
-    <div class="card shadow-sm mb-4">
-      <div class="card-header bg-success text-white fw-bold">
-        ➕ Upload New Material
-      </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <label class="form-label">Material Title</label>
-          <input type="text" id="title" class="form-control" placeholder="e.g. Week 1 - Introduction to Cloud">
+    <div class="container py-5">
+        <h2 class="mb-4">Learning Material Management</h2>
+        
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
+                <h5 class="card-title">Upload New Material</h5>
+                <div class="upload-zone mt-3">
+                    <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
+                    <p class="mt-2">Drag and drop "heavy" materials (PDF, MP4) or click to browse</p>
+                    <input type="file" class="d-none" id="fileInput">
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Description</label>
-          <textarea id="description" class="form-control" rows="2" placeholder="Brief description of this material"></textarea>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Your Uploaded Materials</h5>
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>File Name</th>
+                            <th>Type</th>
+                            <th>Date Uploaded</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Lecture_01_Introduction.pdf</td>
+                            <td><span class="badge bg-danger">PDF</span></td>
+                            <td>May 10, 2026</td>
+                            <td><i class="bi bi-cloud-check text-success"></i> S3 Synced</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">File URL</label>
-          <input type="text" id="fileUrl" class="form-control" placeholder="e.g. https://drive.google.com/your-file-link">
-          <div class="form-text">Paste a Google Drive or any file link here.</div>
-        </div>
-        <button onclick="uploadMaterial()" class="btn btn-success">Upload Material</button>
-        <div id="upload-msg" class="mt-3"></div>
-      </div>
     </div>
-
-    <!-- Materials List -->
-    <div class="card shadow-sm">
-      <div class="card-header bg-secondary text-white fw-bold">
-        📋 Uploaded Materials
-      </div>
-      <div class="card-body">
-        <table class="table table-bordered table-hover">
-          <thead class="table-dark">
-            <tr>
-              <th>#</th>
-              <th>Title</th>
-              <th>Description</th>
-              <th>File Link</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="material-table">
-            <tr><td colspan="5" class="text-center text-muted">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Edit Modal -->
-  <div class="modal fade" id="editModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-warning">
-          <h5 class="modal-title">✏️ Edit Material</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="edit-id">
-          <div class="mb-3">
-            <label class="form-label">Title</label>
-            <input type="text" id="edit-title" class="form-control">
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea id="edit-description" class="form-control" rows="2"></textarea>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">File URL</label>
-            <input type="text" id="edit-fileUrl" class="form-control">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-warning" onclick="saveEdit()">Save Changes</button>
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'index.html';
-
-    // ---- Load all materials ----
-    async function loadMaterials() {
-      const res = await fetch('http://localhost:5000/api/materials', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      const materials = await res.json();
-      const tbody = document.getElementById('material-table');
-      tbody.innerHTML = '';
-
-      if (!materials.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No materials uploaded yet.</td></tr>';
-        return;
-      }
-
-      materials.forEach((m, i) => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${m.title}</td>
-            <td>${m.description || '-'}</td>
-            <td><a href="${m.fileUrl}" target="_blank" class="btn btn-sm btn-outline-primary">Open File</a></td>
-            <td>
-              <button onclick="openEdit('${m._id}', '${m.title}', '${m.description}', '${m.fileUrl}')" 
-                class="btn btn-sm btn-warning me-1">✏️ Edit</button>
-              <button onclick="deleteMaterial('${m._id}')" 
-                class="btn btn-sm btn-danger">🗑️ Delete</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    // ---- Upload material ----
-    async function uploadMaterial() {
-      const title = document.getElementById('title').value;
-      const description = document.getElementById('description').value;
-      const fileUrl = document.getElementById('fileUrl').value;
-      const msg = document.getElementById('upload-msg');
-
-      if (!title || !fileUrl) {
-        msg.innerHTML = '<div class="alert alert-danger">Title and File URL are required.</div>';
-        return;
-      }
-
-      const res = await fetch('http://localhost:5000/api/materials', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ title, description, fileUrl })
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        msg.innerHTML = '<div class="alert alert-success">Material uploaded successfully!</div>';
-        document.getElementById('title').value = '';
-        document.getElementById('description').value = '';
-        document.getElementById('fileUrl').value = '';
-        loadMaterials();
-      } else {
-        msg.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
-      }
-    }
-
-    // ---- Delete material ----
-    async function deleteMaterial(id) {
-      if (!confirm('Are you sure you want to delete this material?')) return;
-
-      const res = await fetch(`http://localhost:5000/api/materials/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-
-      if (res.ok) {
-        alert('Material deleted!');
-        loadMaterials();
-      }
-    }
-
-    // ---- Open Edit Modal ----
-    function openEdit(id, title, description, fileUrl) {
-      document.getElementById('edit-id').value = id;
-      document.getElementById('edit-title').value = title;
-      document.getElementById('edit-description').value = description;
-      document.getElementById('edit-fileUrl').value = fileUrl;
-      new bootstrap.Modal(document.getElementById('editModal')).show();
-    }
-
-    // ---- Save Edit ----
-    async function saveEdit() {
-      const id = document.getElementById('edit-id').value;
-      const title = document.getElementById('edit-title').value;
-      const description = document.getElementById('edit-description').value;
-      const fileUrl = document.getElementById('edit-fileUrl').value;
-
-      const res = await fetch(`http://localhost:5000/api/materials/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({ title, description, fileUrl })
-      });
-
-      if (res.ok) {
-        alert('Material updated!');
-        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-        loadMaterials();
-      }
-    }
-
-    loadMaterials();
-  </script>
-
 </body>
 </html>
