@@ -2,59 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LMS | Create Course</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        .navbar { background-color: #002b5c; }
-        .card { border: none; border-radius: 15px; }
-    </style>
+    <title>LMS Course Module - Lecturer Panel</title>
+    <link rel="stylesheet" href="css/course.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">Learning Management System (LMS)</a>
-            <span class="badge bg-warning text-dark">Lecturer Access</span>
-        </div>
-    </nav>
 
-    <div class="container" style="max-width: 800px;">
-        <div class="card shadow p-4">
-            <h3 class="fw-bold mb-4">Publish New Course</h3>
-            <form id="createForm">
-                <div class="mb-3">
-                    <label class="form-label">Course Code</label>
-                    <input type="text" id="code" class="form-control" placeholder="e.g. CSF3043" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Course Title</label>
-                    <input type="text" id="title" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Syllabus Description</label>
-                    <textarea id="desc" class="form-control" rows="5"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary btn-lg w-100">Create Course</button>
-            </form>
-        </div>
+<div class="padded-container">
+    <div class="card">
+        <h2>Create New LMS Course</h2>
+        <p class="subtitle" style="margin-bottom: 20px;">Add code variables and publish syllabi tracking matrices directly to the catalog registry database tier.</p>
+        
+        <form id="createForm">
+            <div class="form-group">
+                <label>Course Code</label>
+                <input type="text" id="code" placeholder="e.g. CSF3043" required>
+            </div>
+            <div class="form-group">
+                <label>Course Title</label>
+                <input type="text" id="title" placeholder="e.g. Object-Oriented Programming" required>
+            </div>
+            <div class="form-group">
+                <label>Syllabus Description</label>
+                <textarea id="desc" rows="6" placeholder="Enter full layout syllabus structure guidelines..." required></textarea>
+            </div>
+            <button type="submit" style="width: 100%;">Publish Course to Catalog</button>
+        </form>
     </div>
+</div>
 
-    <script>
-            document.getElementById('createForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                courseCode: document.getElementById('code').value,
-                title: document.getElementById('title').value,
-                description: document.getElementById('desc').value,
-                lecturerId: "LECT001"
-            };
-            await fetch("http://localhost:3000/api/courses/create", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            window.location.href = "course-catalog.html"; // Redirect to see the result
+<script>
+    document.getElementById('createForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            courseCode: document.getElementById('code').value,
+            title: document.getElementById('title').value,
+            description: document.getElementById('desc').value,
+            lecturerId: "LECT001"
+        };
+        await fetch("http://localhost:3000/api/courses/create", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
         });
-    </script>
+        window.location.href = "course-catalog.html";
+    });
+</script>
 </body>
 </html>

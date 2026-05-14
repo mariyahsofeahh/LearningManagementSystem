@@ -2,46 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LMS | Edit Course</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; }
-        .navbar { background-color: #002b5c; }
-    </style>
+    <title>LMS Course Module - Modify Workspace</title>
+    <link rel="stylesheet" href="css/course.css">
 </head>
 <body>
-    <nav class="navbar navbar-dark mb-4">
-        <div class="container"><a class="navbar-brand" href="index.html">Learning Management System (LMS)</a></div>
-    </nav>
 
-    <div class="container" style="max-width: 800px;">
-        <div class="card shadow-sm p-4 border-0">
-            <h3 class="mb-4">Edit Course Details</h3>
-            <form id="editForm">
-                <input type="text" id="editTitle" class="form-control mb-3" placeholder="Title">
-                <textarea id="editDesc" class="form-control mb-3" rows="5" placeholder="Description"></textarea>
-                <button type="submit" class="btn btn-warning w-100">Save Changes</button>
-            </form>
-        </div>
+<div class="padded-container">
+    <div class="card">
+        <h2>Edit Course System Registry</h2>
+        <p class="subtitle" style="margin-bottom: 20px;">Modify structural descriptions or titles within the Learning Management System (LMS) schema.</p>
+        
+        <form id="editForm">
+            <div class="form-group">
+                <label>Update Course Title</label>
+                <input type="text" id="editTitle" required>
+            </div>
+            <div class="form-group">
+                <label>Modify Course Description</label>
+                <textarea id="editDesc" rows="6" required></textarea>
+            </div>
+            <button type="submit" style="width: 100%;">Save Structural Changes</button>
+        </form>
     </div>
+</div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    const API_URL = "http://localhost:3000/api/courses";
 
-        document.getElementById('editForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await fetch(`https://your-backend-on-koyeb.koyeb.app/api/courses/update/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: document.getElementById('editTitle').value,
-                    description: document.getElementById('editDesc').value
-                })
-            });
-            alert("Update complete!");
-            window.location.href = "course-catalog.html";
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await fetch(`${API_URL}/update/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: document.getElementById('editTitle').value,
+                description: document.getElementById('editDesc').value
+            })
         });
-    </script>
+        alert("Update functional changes complete!");
+        window.location.href = "course-catalog.html";
+    });
+</script>
 </body>
 </html>
