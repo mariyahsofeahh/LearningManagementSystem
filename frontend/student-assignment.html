@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LMS Assignment Module</title>
+    <link rel="stylesheet" href="css/assignment.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>LMS</h2>
+
+        <a href="#" class="active">📚 Assignments</a>
+        <a href="#">🏠 Dashboard</a>
+        <a href="#">👨‍🎓 My Courses</a>
+        <a href="#">📊 Grades</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <h1>Assignment </h1>
+        <p class="subtitle">View and submit your assignments</p>
+
+        <!-- ASSIGNMENT CARDS -->
+        <div class="grid">
+
+            <!-- CARD 1 -->
+            <div class="card">
+                <h3>Phase OS Scheduling</h3>
+                <p>Implement FCFS, SJF and Round Robin algorithms.</p>
+
+                <div class="info">
+                    <span class="due">Due: 20 May 2026</span>
+                    <span class="status open">Open</span>
+                </div>
+
+                <button onclick="openPopup()">Submit Assignment</button>
+            </div>
+
+            <!-- CARD 2 -->
+            <div class="card">
+                <h3>Database Design</h3>
+                <p>Create ERD and relational schema.</p>
+
+                <div class="info">
+                    <span class="due">Due: 25 May 2026</span>
+                    <span class="status open">Open</span>
+                </div>
+
+                <button onclick="openPopup()">Submit Assignment</button>
+            </div>
+
+            <!-- CARD 3 -->
+            <div class="card">
+                <h3>Web System Development</h3>
+                <p>Build a simple LMS web application.</p>
+
+                <div class="info">
+                    <span class="due">Due: 1 June 2026</span>
+                    <span class="status closed">Closed</span>
+                </div>
+
+                <button disabled>Closed</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- POPUP FORM -->
+<div id="popup" class="popup">
+    <div class="popup-content">
+        <h2>Submit Assignment</h2>
+
+        <input type="text" placeholder="Your Name">
+        <input type="file">
+
+        <button onclick="closePopup()">Submit</button>
+        <button class="cancel" onclick="closePopup()">Cancel</button>
+    </div>
+</div>
+
+<script>
+function openPopup() {
+    document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("popup").style.display = "none";
+}
+</script>
+
+</body>
+</html>
