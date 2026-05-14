@@ -36,19 +36,22 @@
             
             container.innerHTML = courses.map(c => `
                 <div class="card">
-                    <div>
-                        <span class="code-badge">${c.courseCode}</span>
-                        <h3 style="margin-top:12px;">${c.title}</h3>
-                        <p>${c.description.substring(0, 100)}...</p>
+                    <h3>${c.title}</h3>
+                    <div class="info">
+                        <span class="due">Code: <b>${c.courseCode}</b></span>
+                        <span class="status open">Available</span>
                     </div>
-                    <div class="actions">
-                        <a href="course-details.html?id=${c._id}" class="btn-link secondary">Details</a>
-                        <button onclick="enroll('${c._id}')">Enrol Now</button>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">
+                        ${c.description.substring(0, 90)}...
+                    </p>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="course-details.html?id=${c._id}" class="btn-link secondary" style="width: 40%;">Details</a>
+                        <button onclick="enroll('${c._id}')" style="width: 60%;">Enrol Now</button>
                     </div>
                 </div>
             `).join('');
         } catch (err) {
-            console.error("Data Layer parsing failed", err);
+            console.error("Data Layer fetch failed:", err);
         }
     }
 

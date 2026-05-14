@@ -7,22 +7,32 @@
 </head>
 <body>
 
-<div class="detail-container">
-    <a href="course-catalog.html" class="back-link">← Back to Course Catalog</a>
-    
-    <div class="card" style="padding: 30px;">
-        <div>
-            <span id="displayCourseCode" class="code-badge">LOADING...</span>
-            <h1 id="courseTitle" style="margin-top: 15px;">Loading Course Title</h1>
-            <hr style="border: 0; border-top: 1px solid #dadce0; margin-vertical: 20px;">
+<div class="container">
+    <div class="sidebar">
+        <h2>LMS</h2>
+        <a href="course-catalog.html" class="active">📚 Course Catalog</a>
+        <a href="#">🏠 Dashboard</a>
+        <a href="#">👨‍🎓 My Courses</a>
+        <a href="#">📊 Grades</a>
+    </div>
+
+    <div class="main">
+        <a href="course-catalog.html" class="back-link">← Back to Course Catalog</a>
+        
+        <div class="card" style="max-width: 750px; margin-top: 10px;">
+            <div class="info" style="margin-bottom: 0;">
+                <h1 id="courseTitle" style="margin: 0;">Loading Course Title...</h1>
+                <span id="displayCourseCode" class="status open" style="background: #2563eb; align-self: center;">CODE</span>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
             
             <h3>Syllabus & Course Description</h3>
             <div id="fullDescription" class="content-block">
-                Retrieving registry data metrics...
+                Retrieving database registry records...
             </div>
-        </div>
 
-        <button id="enrollBtn" style="margin-top: 25px; width: 100%; padding: 12px;">Enrol in This Course</button>
+            <button id="enrollBtn" style="margin-top: 15px; padding: 12px;">Enrol in This Course</button>
+        </div>
     </div>
 </div>
 

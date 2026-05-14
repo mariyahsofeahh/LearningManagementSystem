@@ -7,26 +7,35 @@
 </head>
 <body>
 
-<div class="padded-container">
-    <div class="card">
-        <h2>Create New LMS Course</h2>
-        <p class="subtitle" style="margin-bottom: 20px;">Add code variables and publish syllabi tracking matrices directly to the catalog registry database tier.</p>
+<div class="container">
+    <div class="sidebar">
+        <h2>LMS</h2>
+        <a href="#" class="active">📝 Course Management</a>
+        <a href="#">🏠 Dashboard</a>
+        <a href="#">📋 View Metrics</a>
+    </div>
+
+    <div class="main">
+        <h1>Create New LMS Course</h1>
+        <p class="subtitle">Publish academic course schemas directly to the tracking database catalog tier</p>
         
-        <form id="createForm">
-            <div class="form-group">
-                <label>Course Code</label>
-                <input type="text" id="code" placeholder="e.g. CSF3043" required>
-            </div>
-            <div class="form-group">
-                <label>Course Title</label>
-                <input type="text" id="title" placeholder="e.g. Object-Oriented Programming" required>
-            </div>
-            <div class="form-group">
-                <label>Syllabus Description</label>
-                <textarea id="desc" rows="6" placeholder="Enter full layout syllabus structure guidelines..." required></textarea>
-            </div>
-            <button type="submit" style="width: 100%;">Publish Course to Catalog</button>
-        </form>
+        <div class="card" style="max-width: 550px;">
+            <form id="createForm">
+                <div class="form-group">
+                    <label>Course Code</label>
+                    <input type="text" id="code" placeholder="e.g., CSF3043" required>
+                </div>
+                <div class="form-group">
+                    <label>Course Title</label>
+                    <input type="text" id="title" placeholder="e.g., Object-Oriented Programming" required>
+                </div>
+                <div class="form-group">
+                    <label>Syllabus Description</label>
+                    <textarea id="desc" rows="6" placeholder="Provide course requirements and layout details..." required></textarea>
+                </div>
+                <button type="submit">Publish Course</button>
+            </form>
+        </div>
     </div>
 </div>
 

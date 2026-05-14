@@ -7,22 +7,30 @@
 </head>
 <body>
 
-<div class="padded-container">
-    <div class="card">
-        <h2>Edit Course System Registry</h2>
-        <p class="subtitle" style="margin-bottom: 20px;">Modify structural descriptions or titles within the Learning Management System (LMS) schema.</p>
+<div class="container">
+    <div class="sidebar">
+        <h2>LMS</h2>
+        <a href="#" class="active">📝 Course Management</a>
+        <a href="#">🏠 Dashboard</a>
+    </div>
+
+    <div class="main">
+        <h1>Edit Course System Registry</h1>
+        <p class="subtitle">Modify structural metadata profiles within the Learning Management System (LMS) schema</p>
         
-        <form id="editForm">
-            <div class="form-group">
-                <label>Update Course Title</label>
-                <input type="text" id="editTitle" required>
-            </div>
-            <div class="form-group">
-                <label>Modify Course Description</label>
-                <textarea id="editDesc" rows="6" required></textarea>
-            </div>
-            <button type="submit" style="width: 100%;">Save Structural Changes</button>
-        </form>
+        <div class="card" style="max-width: 550px;">
+            <form id="editForm">
+                <div class="form-group">
+                    <label>Update Course Title</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Modify Course Description</label>
+                    <textarea id="editDesc" rows="6" required></textarea>
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -41,7 +49,7 @@
                 description: document.getElementById('editDesc').value
             })
         });
-        alert("Update functional changes complete!");
+        alert("Course modifications saved successfully!");
         window.location.href = "course-catalog.html";
     });
 </script>
