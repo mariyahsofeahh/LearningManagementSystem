@@ -2,23 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LMS | Course Details</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #f8f9fa; }
+        body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
         .navbar { background-color: #002b5c; }
-        .hero-header { background: white; padding: 40px 0; border-bottom: 1px solid #dee2e6; }
+        .hero-header { background: white; padding: 60px 0; border-bottom: 1px solid #e9ecef; }
+        .card { border: none; border-radius: 12px; }
+        .syllabus-item { border-left: 4px solid #002b5c; padding-left: 15px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark mb-0">
-        <div class="container"><a class="navbar-brand" href="index.html">Learning Management System (LMS)</a></div>
+
+    <nav class="navbar navbar-expand-lg navbar-dark mb-0">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">Learning Management System (LMS)</a>
+            <span class="badge bg-info text-dark">Course Overview</span>
+        </div>
     </nav>
 
     <div class="hero-header mb-5">
         <div class="container">
-            <div id="headerContent">
-                <h1 class="display-5 fw-bold">Loading...</h1>
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <span class="badge bg-primary px-3 py-2 mb-3">CSF3043</span>
+                    <h1 class="display-4 fw-bold">Object-Oriented Programming</h1>
+                    <p class="lead text-muted">Master the principles of abstraction, encapsulation, inheritance, and polymorphism using Java.</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <span><i class="fas fa-user-tie me-2"></i> Dr. Ahmad Zaki</span>
+                        <span><i class="fas fa-calendar-alt me-2"></i> Semester 2, 2025/2026</span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="card shadow-sm p-4 bg-white">
+                        <h5 class="mb-3">Ready to start?</h5>
+                        <button class="btn btn-success btn-lg w-100 mb-2">Enrol Now</button>
+                        <p class="small text-muted text-center mb-0">Join 45 other students</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -26,59 +49,51 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8">
-                <div class="card p-4 border-0 shadow-sm">
-                    <h5>Course Description & Syllabus</h5>
-                    <p id="fullDesc" class="text-muted">Content loading from Application Layer...</p>
+                <div class="card p-4 shadow-sm mb-4">
+                    <h4 class="fw-bold mb-4"><i class="fas fa-info-circle me-2"></i> Course Description</h4>
+                    <p>This course provides a deep dive into the Object-Oriented paradigm. Students will learn how to design complex software systems by modeling real-world entities into software objects. The course emphasizes clean code practices and design patterns essential for modern software engineering.</p>
+                    
+                    <h4 class="fw-bold mt-4 mb-4"><i class="fas fa-list-ul me-2"></i> Weekly Syllabus</h4>
+                    
+                    <div class="syllabus-item">
+                        <h6>Week 1-2: Introduction to Java & OOP Basics</h6>
+                        <p class="small text-muted">Setting up the environment, understanding classes, objects, and constructors.</p>
+                    </div>
+
+                    <div class="syllabus-item">
+                        <h6>Week 3-5: The Four Pillars of OOP</h6>
+                        <p class="small text-muted">Deep dive into Encapsulation, Inheritance, Polymorphism, and Abstraction with practical labs.</p>
+                    </div>
+
+                    <div class="syllabus-item">
+                        <h6>Week 6-8: Exception Handling & File I/O</h6>
+                        <p class="small text-muted">Learning how to build robust applications that handle errors gracefully and manage persistent data.</p>
+                    </div>
                 </div>
             </div>
+
             <div class="col-md-4">
-                <div class="card p-4 border-0 shadow-sm bg-white">
-                    <h6 class="text-uppercase text-muted">Enrollment</h6>
-                    <button class="btn btn-success btn-lg w-100 mt-2">Enrol in Course</button>
+                <div class="card p-4 shadow-sm mb-4">
+                    <h5 class="fw-bold mb-3">Course Features</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 12 Comprehensive Modules</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Hands-on Lab Exercises</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Industry-standard Project</li>
+                        <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> Certificate of Completion</li>
+                    </ul>
+                </div>
+
+                <div class="card p-4 shadow-sm bg-dark text-white">
+                    <h5>Pre-requisites</h5>
+                    <p class="small">Basic understanding of C++ or structural programming logic is recommended.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card p-5 shadow-sm">
-                    <h1 id="courseTitle" class="fw-bold"></h1>
-                    <p id="courseCode" class="badge bg-primary fs-6"></p>
-                    <hr>
-                    <p id="courseDesc" class="lead text-muted"></p>
-                </div>
-            </div>
-        </div>
-    </div>
+    <footer class="text-center py-4 mt-5 text-muted">
+        <p>&copy; 2026 Learning Management System (LMS)</p>
+    </footer>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-
-        async function fetchDetails() {
-            const res = await fetch(`http://localhost:3000/api/courses/${id}`);
-            const data = await res.json();
-            document.getElementById('courseTitle').innerText = data.title;
-            document.getElementById('courseCode').innerText = data.courseCode;
-            document.getElementById('courseDesc').innerText = data.description;
-        }
-        fetchDetails();
-    
-        const urlParams = new URLSearchParams(window.location.search);
-        const courseId = urlParams.get('id');
-
-        async function fetchDetails() {
-            const res = await fetch(`https://your-backend-on-koyeb.koyeb.app/api/courses/${courseId}`);
-            const data = await res.json();
-            document.getElementById('headerContent').innerHTML = `
-                <span class="badge bg-primary mb-2">${data.courseCode}</span>
-                <h1 class="display-5 fw-bold">${data.title}</h1>
-            `;
-            document.getElementById('fullDesc').innerText = data.description;
-        }
-        fetchDetails();
-    </script>
 </body>
 </html>
