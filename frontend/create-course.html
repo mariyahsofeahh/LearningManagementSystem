@@ -39,36 +39,7 @@
         </div>
     </div>
 
-    <div class="container" style="max-width: 600px;">
-        <div class="card p-4 shadow-sm mt-5">
-            <h3 class="mb-4">Create New Course</h3>
-            <form id="createForm">
-                <input type="text" id="code" class="form-control mb-3" placeholder="Course Code" required>
-                <input type="text" id="title" class="form-control mb-3" placeholder="Course Title" required>
-                <textarea id="desc" class="form-control mb-3" rows="4" placeholder="Description"></textarea>
-                <button type="submit" class="btn btn-primary w-100">Publish Course</button>
-            </form>
-        </div>
-    </div>
-
     <script>
-        document.getElementById('createForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = {
-                courseCode: document.getElementById('code').value,
-                title: document.getElementById('title').value,
-                description: document.getElementById('desc').value,
-                lecturerId: "MOCK_ID" 
-            };
-            await fetch("https://your-backend-on-koyeb.koyeb.app/api/courses/create", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            alert("Course successfully created!");
-            window.location.href = "course-catalog.html";
-        });
-
             document.getElementById('createForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {
