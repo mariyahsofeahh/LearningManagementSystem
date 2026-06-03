@@ -4,9 +4,18 @@
         <servlet-name>LearningMaterialServlet</servlet-name>
         <servlet-class>lms.controller.LearningMaterialServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>AssignmentServlet</servlet-name>
+        <servlet-class>lms.controller.AssignmentServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>LearningMaterialServlet</servlet-name>
         <url-pattern>/LearningMaterialServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AssignmentServlet</servlet-name>
+<!--        anything start with /assignment goes to AssignmentServlet-->
+        <url-pattern>/Assignment/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
