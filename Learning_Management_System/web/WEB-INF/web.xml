@@ -8,14 +8,22 @@
         <servlet-name>AssignmentServlet</servlet-name>
         <servlet-class>lms.controller.AssignmentServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>CourseServlet</servlet-name>
+        <servlet-class>lms.controller.CourseServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>LearningMaterialServlet</servlet-name>
         <url-pattern>/LearningMaterialServlet</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>AssignmentServlet</servlet-name>
-<!--        anything start with /assignment goes to AssignmentServlet-->
+        <!--        anything start with /assignment goes to AssignmentServlet-->
         <url-pattern>/Assignment/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CourseServlet</servlet-name>
+        <url-pattern>/CourseServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
