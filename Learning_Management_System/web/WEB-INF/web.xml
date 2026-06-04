@@ -4,9 +4,20 @@
         <servlet-name>LearningMaterialServlet</servlet-name>
         <servlet-class>lms.controller.LearningMaterialServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>loginServlet</servlet-name>
+        <servlet-class>lms.controller.loginServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>LearningMaterialServlet</servlet-name>
         <url-pattern>/LearningMaterialServlet</url-pattern>
+    </servlet-mapping>
+       <welcome-file-list>
+        <welcome-file>login.jsp</welcome-file>
+    </welcome-file-list>
+    <servlet-mapping>
+        <servlet-name>loginServlet</servlet-name>
+        <url-pattern>/loginServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

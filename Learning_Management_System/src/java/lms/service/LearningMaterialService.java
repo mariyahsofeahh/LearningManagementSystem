@@ -20,9 +20,9 @@ import java.util.Map;
 public class LearningMaterialService {
 
     // Configure your local instance credentials here
-    private final String dbUrl = "jdbc:mysql://localhost:3306/lms_database?useSSL=false&serverTimezone=UTC";
+    private final String dbUrl = "jdbc:mysql://localhost:3307/lmsdb?useSSL=false&serverTimezone=UTC";
     private final String dbUser = "root";
-    private final String dbPassword = "password";
+    private final String dbPassword = "";
 
     public LearningMaterialService() {
         try {
