@@ -23,7 +23,6 @@ import javax.servlet.annotation.WebServlet;
  *
  * @author ASUS
  */
-
 @WebServlet(urlPatterns = {
     "/assignment/*"
 })
@@ -67,7 +66,7 @@ public class AssignmentServlet extends HttpServlet {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
- @Override
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -78,24 +77,29 @@ public class AssignmentServlet extends HttpServlet {
         String path = request.getPathInfo();
 
         // If no path or just "/", show create form
-        if (path == null || path.equals("/")) {
-
+        if (path == null || path.equals("/") || path.isEmpty()) {
             // Forward user to create assignment page (JSP inside WEB-INF)
             request.getRequestDispatcher("/WEB-INF/lecturer/createAssignment.jsp")
                     .forward(request, response);
 
-        }
-
-        // If user requests list page
+        } // If user requests list page
         else if (path.equals("/list")) {
 
             // 1. Get all assignments from database
-            request.setAttribute("assignments", dao.getAllAssignments());
+            HttpSession session = request.getSession();
+
+            int lecturerId
+                    = (Integer) session.getAttribute("userId");
+
+            request.setAttribute(
+                    "assignments",
+                    dao.getAssignmentsByLecturer(lecturerId));
 
             // 2. Forward to list JSP page
             request.getRequestDispatcher("/WEB-INF/lecturer/assignmentList.jsp")
                     .forward(request, response);
         }
+
     }
 
     // ===========================
@@ -138,39 +142,78 @@ public class AssignmentServlet extends HttpServlet {
         }
     }
 
-    // ===========================
-    // CREATE ASSIGNMENT METHOD
-    // ===========================
+//    // ===========================
+//    // CREATE ASSIGNMENT METHOD
+//    // ===========================
+//    private void createAssignment(HttpServletRequest request, HttpServletResponse response)
+//            throws IOException {
+//
+//        // 1. Get form data from JSP
+//        int courseId = Integer.parseInt(request.getParameter("courseId"));
+////        HttpSession session = request.getSession();
+////
+////        int lecturerId = (Integer) session.getAttribute("userId");
+//
+//int lecturerId = 1; // TEMPORARY for testing
+//        String title = request.getParameter("title");
+//        String description = request.getParameter("description");
+//        String deadline = request.getParameter("deadline");
+//
+//        // 2. Create Assignment object (model)
+//        Assignment assignment = new Assignment();
+//        assignment.setCourseId(courseId);
+//        assignment.setLecturerId(lecturerId);
+//        assignment.setTitle(title);
+//        assignment.setDescription(description);
+//        assignment.setDeadline(deadline);
+//
+//        // 3. Send object to DAO (database layer)
+//        boolean success = dao.createAssignment(assignment);
+//
+//        // 4. Redirect based on result
+//        if (success) {
+//
+//            // If success → go to assignment list page
+//            response.sendRedirect(request.getContextPath() + "/assignment/list");
+//
+//        } else {
+//
+//            // If failed → go back to form with error
+//            response.sendRedirect(request.getContextPath() + "/assignment?error=true");
+//        }
+//    }
+    //untuk sekejap je
     private void createAssignment(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
-        // 1. Get form data from JSP
-        int courseId = Integer.parseInt(request.getParameter("courseId"));
-        int lecturerId = Integer.parseInt(request.getParameter("lecturerId"));
-        String title = request.getParameter("title");
-        String description = request.getParameter("description");
-        String deadline = request.getParameter("deadline");
+        try {
 
-        // 2. Create Assignment object (model)
-        Assignment assignment = new Assignment();
-        assignment.setCourseId(courseId);
-        assignment.setLecturerId(lecturerId);
-        assignment.setTitle(title);
-        assignment.setDescription(description);
-        assignment.setDeadline(deadline);
+//        int courseId = Integer.parseInt(request.getParameter("courseId"));
+//        int lecturerId = Integer.parseInt(request.getParameter("lecturerId"));
+            String courseId = request.getParameter("title");
+            String lecturerId = request.getParameter("description");
 
-        // 3. Send object to DAO (database layer)
-        boolean success = dao.createAssignment(assignment);
+            String title = request.getParameter("title");
+            String description = request.getParameter("description");
+            String deadline = request.getParameter("deadline");
 
-        // 4. Redirect based on result
-        if (success) {
+            Assignment assignment = new Assignment();
+            assignment.setCourseId(courseId);
+            assignment.setLecturerId(lecturerId);
+            assignment.setTitle(title);
+            assignment.setDescription(description);
+            assignment.setDeadline(deadline);
 
-            // If success → go to assignment list page
-            response.sendRedirect(request.getContextPath() + "/assignment/list");
+            boolean success = dao.createAssignment(assignment);
 
-        } else {
+            if (success) {
+                response.sendRedirect(request.getContextPath() + "/assignment/list");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/assignment?error=true");
+            }
 
-            // If failed → go back to form with error
+        } catch (Exception e) {
+            e.printStackTrace(); // VERY IMPORTANT
             response.sendRedirect(request.getContextPath() + "/assignment?error=true");
         }
     }
@@ -194,7 +237,6 @@ public class AssignmentServlet extends HttpServlet {
         // TODO: add delete logic later
         response.sendRedirect(request.getContextPath() + "/assignment/list");
     }
-
 
     /**
      * Returns a short description of the servlet.

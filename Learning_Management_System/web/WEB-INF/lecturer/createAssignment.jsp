@@ -51,7 +51,7 @@
 
                             <label>Lecturer ID</label>
 
-                            <input type="number"
+                            <input type="text"
                                    class="form-control"
                                    name="lecturerId"
                                    required>

@@ -11,8 +11,8 @@ package model;
 public class Assignment {
 
     private int assignmentId;
-    private int courseId;
-    private int lecturerId;
+    private String courseId;
+    private String lecturerId;
     private String title;
     private String description;
     private String deadline;
@@ -28,19 +28,19 @@ public class Assignment {
         this.assignmentId = assignmentId;
     }
 
-    public int getCourseId() {
+    public String getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(int courseId) {
+    public void setCourseId(String courseId) {
         this.courseId = courseId;
     }
 
-    public int getLecturerId() {
+    public String getLecturerId() {
         return lecturerId;
     }
 
-    public void setLecturerId(int lecturerId) {
+    public void setLecturerId(String lecturerId) {
         this.lecturerId = lecturerId;
     }
 
