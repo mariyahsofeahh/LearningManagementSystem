@@ -88,9 +88,10 @@ public class AssignmentServlet extends HttpServlet {
             // 1. Get all assignments from database
             HttpSession session = request.getSession();
 
-            int lecturerId
-                    = (Integer) session.getAttribute("userId");
+//            int lecturerId
+//                    = (Integer) session.getAttribute("userId");
 
+int lecturerId=1;
             request.setAttribute(
                     "assignments",
                     dao.getAssignmentsByLecturer(lecturerId));
