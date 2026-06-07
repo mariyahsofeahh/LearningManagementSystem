@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import lms.DAO.UserDAO; // Importing your clean MongoDB operations wrapper
+import lms.service.UserService;
 import org.bson.Document;
 
 //@WebServlet(urlPatterns = { "/loginServlet" }) // Make sure the path pattern string matches your form action
@@ -16,11 +17,11 @@ public class loginServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String action = request.getParameter("action");
-        
+
         try {
             if ("signup".equals(action)) {
                 handleSignUp(request, response);
@@ -61,29 +62,61 @@ public class loginServlet extends HttpServlet {
         }
     }
 
-    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
+//        String email = request.getParameter("email");
+//        String password = request.getParameter("password");
+//
+//        // Query MongoDB via our isolated data tier class
+//        Document userDoc = userDAO.authenticateUser(email, password);
+//
+//        if (userDoc != null) {
+//            // Instantiate your HTTP Session State Tracking mechanism
+//            HttpSession session = request.getSession(true);
+//            
+//            // CONVERTED: MongoDB unique Hex Object IDs read cleanly as Strings
+//            String stringId = userDoc.getObjectId("_id").toString(); 
+//            
+//            session.setAttribute("userId", stringId);
+//            session.setAttribute("userName", userDoc.getString("full_name"));
+//            session.setAttribute("userRole", userDoc.getString("role"));
+//
+//            // Safely transfer flow over to your primary Dashboard landing handler view
+//            response.sendRedirect("DashboardServlet");
+//        } else {
+//            request.setAttribute("error", "The password or email parameters were incorrect.");
+//            request.getRequestDispatcher("login.jsp").forward(request, response);
+//        }
+//    }
+//}
+    private void handleLogin(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
         String email = request.getParameter("email");
         String password = request.getParameter("password");
 
-        // Query MongoDB via our isolated data tier class
-        Document userDoc = userDAO.authenticateUser(email, password);
+        // 🔥 CREATE SERVICE OBJECT
+        UserService service = new UserService();
 
-        if (userDoc != null) {
-            // Instantiate your HTTP Session State Tracking mechanism
-            HttpSession session = request.getSession(true);
-            
-            // CONVERTED: MongoDB unique Hex Object IDs read cleanly as Strings
-            String stringId = userDoc.getObjectId("_id").toString(); 
-            
-            session.setAttribute("userId", stringId);
-            session.setAttribute("userName", userDoc.getString("full_name"));
-            session.setAttribute("userRole", userDoc.getString("role"));
+        // 🔥 CALL MONGODB THROUGH SERVICE
+        Document user = service.login(email, password);
 
-            // Safely transfer flow over to your primary Dashboard landing handler view
+        if (user != null) {
+
+            // 🔐 CREATE SESSION
+            HttpSession session = request.getSession();
+
+            session.setAttribute("userId", user.getObjectId("_id").toString());
+            session.setAttribute("userName", user.getString("full_name"));
+            session.setAttribute("userRole", user.getString("role"));
+
+            // 🎯 REDIRECT AFTER LOGIN
             response.sendRedirect("DashboardServlet");
+
         } else {
-            request.setAttribute("error", "The password or email parameters were incorrect.");
+
+            request.setAttribute("error", "Invalid email or password");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
+    
     }
 }
