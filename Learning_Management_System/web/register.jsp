@@ -49,7 +49,7 @@
                 <% } %>
 
                 <div class="card glass-auth-card p-4 p-sm-5 border-0">
-                    <form action="LoginServlet" method="POST">
+                    <form action="loginServlet" method="POST">
                         <input type="hidden" name="action" value="signup">
                         
                         <label class="form-label small fw-semibold text-secondary mb-1">Full Name</label>

@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lms.DAO.AssignmentDAO;
 import javax.servlet.http.*;
-import model.Assignment;
+import lms.model.Assignment;
 import javax.servlet.annotation.WebServlet;
 
 /**

@@ -51,7 +51,7 @@
                 <% } %>
 
                 <div class="card glass-auth-card p-4 p-sm-5 border-0">
-                    <form action="LoginServlet" method="POST">
+                    <form action="loginServlet" method="POST">
                         <input type="hidden" name="action" value="login">
                         
                         <label class="form-label small fw-semibold text-secondary mb-1">Account Email</label>

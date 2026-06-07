@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lms.DAO.CourseDAO;
-import model.Course;
+import lms.model.Course;
 
 @WebServlet(urlPatterns = { "/course/*" })
 public class CourseServlet extends HttpServlet {

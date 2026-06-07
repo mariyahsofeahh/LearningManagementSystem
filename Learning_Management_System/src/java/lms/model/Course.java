@@ -1,4 +1,4 @@
-package model;
+package lms.model;
 
 public class Course {
     private int courseId;

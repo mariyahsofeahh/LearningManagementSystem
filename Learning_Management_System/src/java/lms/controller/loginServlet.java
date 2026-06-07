@@ -90,11 +90,7 @@ public class loginServlet extends HttpServlet {
                     session.setAttribute("userRole", rs.getString("role"));
 
                     String assignedRole = rs.getString("role");
-                    if ("lecturer".equalsIgnoreCase(assignedRole)) {
-                        response.sendRedirect("LearningMaterialServlet?role=lecturer");
-                    } else {
-                        response.sendRedirect("LearningMaterialServlet?role=student");
-                    }
+                    response.sendRedirect("DashboardServlet");
                 } else {
                     request.setAttribute("error", "The password or email parameters were incorrect.");
                     request.getRequestDispatcher("login.jsp").forward(request, response);
