@@ -6,13 +6,14 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import lms.DAO.CourseDAO;
+import lms.DAO.CourseDAO; // Points to your newly updated MongoDB Data Tier
 import lms.model.Course;
 
 @WebServlet(urlPatterns = { "/course/*" })
 public class CourseServlet extends HttpServlet {
 
-    private CourseDAO dao = new CourseDAO();
+    // Initialize your MongoDB data wrapper bridge component
+    private final CourseDAO repository = new CourseDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -21,12 +22,15 @@ public class CourseServlet extends HttpServlet {
         String path = request.getPathInfo();
 
         if (path == null || path.equals("/") || path.equals("/catalog")) {
-            request.setAttribute("courses", dao.getAllCourses());
+            // Pull all dynamic cloud entries straight into your frontend dashboard view
+            request.setAttribute("courses", repository.getAllCourses());
             request.getRequestDispatcher("/courseCatalog.jsp").forward(request, response);
         } 
         else if (path.equals("/view")) {
-            int id = Integer.parseInt(request.getParameter("id"));
-            Course course = dao.getCourseById(id);
+            // CONVERTED: Expecting a unique String code matching MongoDB Atlas documents
+            String classCode = request.getParameter("id");
+            
+            Course course = repository.getCourseById(classCode);
             if (course != null) {
                 request.setAttribute("course", course);
                 request.getRequestDispatcher("/courseDetails.jsp").forward(request, response);
@@ -65,9 +69,9 @@ public class CourseServlet extends HttpServlet {
         Course course = new Course();
         course.setTitle(request.getParameter("title"));
         course.setDescription(request.getParameter("description"));
-        course.setLecturerId(75776); // Lecturer context fallback identifier assignment
+        course.setLecturerId(75776); // Kept fallback matching your structural architecture expectation
 
-        if (dao.createCourse(course)) {
+        if (repository.createCourse(course)) {
             response.sendRedirect(request.getContextPath() + "/course/catalog?success=created");
         } else {
             response.sendRedirect(request.getContextPath() + "/course/create?error=true");
@@ -75,10 +79,11 @@ public class CourseServlet extends HttpServlet {
     }
 
     private void joinCourseViaCode(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String studentId = request.getParameter("studentId"); // E.g., "S76237"
+        String studentId = request.getParameter("studentId"); 
         String code = request.getParameter("classCode");
 
-        if (dao.enrollStudentByCode(studentId, code)) {
+        // Executes cross-collection join validation in MongoDB Atlas instantly
+        if (repository.enrollStudentByCode(studentId, code)) {
             response.sendRedirect(request.getContextPath() + "/course/catalog?success=enrolled");
         } else {
             response.sendRedirect(request.getContextPath() + "/course/catalog?error=invalidcode");

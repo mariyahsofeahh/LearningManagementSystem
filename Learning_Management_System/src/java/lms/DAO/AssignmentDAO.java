@@ -1,78 +1,78 @@
 package lms.DAO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Sorts;
+import static com.mongodb.client.model.Filters.eq;
 import java.util.ArrayList;
 import java.util.List;
 import lms.model.Assignment;
-import lms.util.DBConnection;
+import lms.db.MongoConnection; // Points to your cloud credentials file
+import org.bson.Document;
 
 public class AssignmentDAO {
 
-    private Connection conn;
+    private final MongoCollection<Document> collection;
 
     public AssignmentDAO() {
-        this.conn = DBConnection.getConnection();
+        // 1. Get your active MongoDB Atlas cloud connection instance
+        MongoDatabase db = MongoConnection.getDatabase();
+        
+        // 2. Select the "assignments" collection on the cloud
+        this.collection = db.getCollection("assignments");
     }
 
-    // CREATE
+    // CREATE (NoSQL Document Insertion)
     public boolean createAssignment(Assignment assignment) {
-
-        boolean success = false;
-
         try {
+            // 3. Wrap your assignment properties nicely into a native BSON Document object
+            Document doc = new Document()
+                    .append("course_id", assignment.getCourseId())
+                    .append("lecturer_id", assignment.getLecturerId())
+                    .append("title", assignment.getTitle())
+                    .append("description", assignment.getDescription())
+                    .append("deadline", assignment.getDeadline());
 
-            String sql = "INSERT INTO assignments "
-                    + "(course_id, lecturer_id, title, description, deadline) "
-                    + "VALUES (?, ?, ?, ?, ?)";
+            // 4. Send the document payload straight over the network into your cloud database
+            collection.insertOne(doc);
+            return true; 
 
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setString(1, assignment.getCourseId());
-            ps.setString(2, assignment.getLecturerId());
-            ps.setString(3, assignment.getTitle());
-            ps.setString(4, assignment.getDescription());
-            ps.setString(5, assignment.getDeadline());
-
-            int row = ps.executeUpdate();
-
-        return row > 0;
-
-    } catch (Exception e) {
-        e.printStackTrace();  // IMPORTANT: SHOW REAL ERROR
-        return false;
+        } catch (Exception e) {
+            System.err.println("Error saving assignment to MongoDB Atlas:");
+            e.printStackTrace();  
+            return false;
+        }
     }
-}
 
-    // GET LIST
-    public List<Assignment> getAssignmentsByLecturer(int lecturerId) {
-
+    // GET LIST (NoSQL Query Filtering)
+    public List<Assignment> getAssignmentsByLecturer(String lecturerId) {
         List<Assignment> list = new ArrayList<>();
 
         try {
+            // 5. Use MongoDB's 'eq' filter to look up matching items instead of SQL WHERE clauses
+            MongoCursor<Document> cursor = collection.find(eq("lecturer_id", lecturerId)).sort(Sorts.descending("_id")).iterator();
 
-            String sql = "SELECT * FROM assignments WHERE lecturer_id = ? ORDER BY assignment_id DESC";
+            // 6. Loop through MongoDB cloud data packets and map them to your Java model objects
+            try {
+                while (cursor.hasNext()) {
+                    Document doc = cursor.next();
+                    
+                    Assignment a = new Assignment();
+                    a.setCourseId(doc.getString("course_id"));
+                    a.setLecturerId(doc.getString("lecturer_id"));
+                    a.setTitle(doc.getString("title"));
+                    a.setDescription(doc.getString("description"));
+                    a.setDeadline(doc.getString("deadline"));
 
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setInt(1, lecturerId);
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                Assignment a = new Assignment();
-                a.setAssignmentId(rs.getInt("assignment_id"));
-                a.setCourseId(rs.getString("course_id"));
-                a.setLecturerId(rs.getString("lecturer_id"));
-                a.setTitle(rs.getString("title"));
-                a.setDescription(rs.getString("description"));
-                a.setDeadline(rs.getString("deadline"));
-
-                list.add(a);
+                    list.add(a);
+                }
+            } finally {
+                cursor.close(); // Clean up memory streams immediately
             }
 
         } catch (Exception e) {
+            System.err.println("Error retrieving assignments from MongoDB Atlas:");
             e.printStackTrace();
         }
 
