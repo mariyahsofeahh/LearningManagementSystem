@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package lms.util;
+package lms.db;
 
 /**
  *
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 /**
  * Centralized Database Connection Utility for MongoDB Atlas Cloud
  */
-public class DBConnection {
+public class MongoConnection {
 
     // Static variables to hold our single instances throughout the app life cycle
     private static MongoClient mongoClient = null;
