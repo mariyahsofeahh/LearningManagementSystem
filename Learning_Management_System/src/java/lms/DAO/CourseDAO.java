@@ -19,13 +19,13 @@ public class CourseDAO {
             MongoDatabase db = MongoConnection.getDatabase();
             MongoCollection<Document> collection = db.getCollection("courses");
             MongoCursor<Document> cursor = collection.find().iterator();
-            
+
             while (cursor.hasNext()) {
                 Document doc = cursor.next();
                 Course course = new Course();
                 course.setTitle(doc.getString("title"));
                 course.setDescription(doc.getString("description"));
-                
+
                 // Keep code consistent with your schema definitions
                 course.setCourseCode(doc.getString("course_code") != null ? doc.getString("course_code") : doc.getObjectId("_id").toString());
                 list.add(course);
@@ -42,7 +42,7 @@ public class CourseDAO {
         try {
             MongoDatabase db = MongoConnection.getDatabase();
             Document doc = db.getCollection("courses").find(eq("course_code", classCode)).first();
-            
+
             if (doc != null) {
                 Course course = new Course();
                 course.setTitle(doc.getString("title"));
@@ -61,12 +61,9 @@ public class CourseDAO {
         try {
             MongoDatabase db = MongoConnection.getDatabase();
             MongoCollection<Document> collection = db.getCollection("courses");
-            
-            // Generate a simple short code for your students to use when joining
-            String randomCode = Long.toHexString(Double.doubleToLongBits(Math.random())).substring(0, 6);
 
             Document doc = new Document()
-                    .append("course_code", randomCode)
+                    .append("course_code", course.getCourseCode())
                     .append("title", course.getTitle())
                     .append("description", course.getDescription())
                     .append("lecturer_id", course.getLecturerId());
@@ -79,12 +76,31 @@ public class CourseDAO {
         }
     }
 
+    //prevent duplicate course codes
+    public boolean courseCodeExists(String courseCode) {
+
+        try {
+            MongoDatabase db = MongoConnection.getDatabase();
+
+            Document existingCourse
+                    = db.getCollection("courses")
+                            .find(eq("course_code", courseCode))
+                            .first();
+
+            return existingCourse != null;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return true;
+        }
+    }
+
     // This method handles the student enrollment logic
     public boolean enrollStudentByCode(String studentId, String courseCode) {
         try {
             MongoDatabase db = MongoConnection.getDatabase();
             Document targetCourse = db.getCollection("courses").find(eq("course_code", courseCode)).first();
-            
+
             if (targetCourse == null) {
                 return false; // Code doesn't exist
             }
@@ -100,28 +116,28 @@ public class CourseDAO {
             return false;
         }
     }
-    
+
     // Add this method inside your CourseDAO class to handle updates
-public boolean updateCourse(Course course) {
-    try {
-        com.mongodb.client.MongoDatabase db = lms.db.MongoConnection.getDatabase();
-        com.mongodb.client.MongoCollection<org.bson.Document> collection = db.getCollection("courses");
-        
-        // 1. Locate the document matching the classroom code string and push updates
-        long modifiedCount = collection.updateOne(
-            com.mongodb.client.model.Filters.eq("course_code", course.getCourseCode()),
-            com.mongodb.client.model.Updates.combine(
-                com.mongodb.client.model.Updates.set("title", course.getTitle()),
-                com.mongodb.client.model.Updates.set("description", course.getDescription())
-            )
-        ).getModifiedCount();
-        
-        // Returns true if a document was successfully updated in MongoDB Atlas
-        return modifiedCount > 0;
-    } catch (Exception e) {
-        System.err.println("Error syncing classroom updates to MongoDB:");
-        e.printStackTrace();
-        return false;
+    public boolean updateCourse(Course course) {
+        try {
+            com.mongodb.client.MongoDatabase db = lms.db.MongoConnection.getDatabase();
+            com.mongodb.client.MongoCollection<org.bson.Document> collection = db.getCollection("courses");
+
+            // 1. Locate the document matching the classroom code string and push updates
+            long modifiedCount = collection.updateOne(
+                    com.mongodb.client.model.Filters.eq("course_code", course.getCourseCode()),
+                    com.mongodb.client.model.Updates.combine(
+                            com.mongodb.client.model.Updates.set("title", course.getTitle()),
+                            com.mongodb.client.model.Updates.set("description", course.getDescription())
+                    )
+            ).getModifiedCount();
+
+            // Returns true if a document was successfully updated in MongoDB Atlas
+            return modifiedCount > 0;
+        } catch (Exception e) {
+            System.err.println("Error syncing classroom updates to MongoDB:");
+            e.printStackTrace();
+            return false;
+        }
     }
-}
 }

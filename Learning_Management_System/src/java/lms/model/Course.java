@@ -1,16 +1,16 @@
 package lms.model;
 
 public class Course {
-    private int courseId;
+    private String courseId;
     private String courseCode;
     private String title;
     private String description;
-    private int lecturerId;
+    private String lecturerId;
 
     public Course() {}
 
-    public int getCourseId() { return courseId; }
-    public void setCourseId(int courseId) { this.courseId = courseId; }
+    public String getCourseId() { return courseId; }
+    public void setCourseId(String courseId) { this.courseId = courseId; }
 
     public String getCourseCode() { return courseCode; }
     public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
@@ -21,6 +21,6 @@ public class Course {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public int getLecturerId() { return lecturerId; }
-    public void setLecturerId(int lecturerId) { this.lecturerId = lecturerId; }
+    public String getLecturerId() { return lecturerId; }
+    public void setLecturerId(String lecturerId) { this.lecturerId = lecturerId; }
 }
