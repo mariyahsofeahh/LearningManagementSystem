@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import lms.DAO.CourseDAO; // Points to your newly updated MongoDB Data Tier
 import lms.model.Course;
 
-@WebServlet(urlPatterns = { "/course/*" })
+//@WebServlet(urlPatterns = { "/course/*" })
 public class CourseServlet extends HttpServlet {
 
     // Initialize your MongoDB data wrapper bridge component

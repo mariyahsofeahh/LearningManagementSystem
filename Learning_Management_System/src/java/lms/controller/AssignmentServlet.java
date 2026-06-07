@@ -12,9 +12,9 @@ import javax.servlet.http.HttpSession;
 import lms.model.Assignment;
 import lms.DAO.AssignmentDAO; // Pointing to your new MongoDB implementation file
 
-@WebServlet(urlPatterns = {
-    "/assignment/*"
-})
+//@WebServlet(urlPatterns = {
+//    "/assignment/*"
+//})
 public class AssignmentServlet extends HttpServlet {
 
     // Instantiating our newly written MongoDB bridge layer

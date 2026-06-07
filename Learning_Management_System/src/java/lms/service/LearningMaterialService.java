@@ -1,118 +1,144 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package lms.service;
 
-/**
- *
- * @author DELL
- */
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Sorts;
+import static com.mongodb.client.model.Filters.eq;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
+
+import lms.db.MongoConnection; // References your centralized cloud cluster credentials helper
+import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class LearningMaterialService {
 
-    // Configure your local instance credentials here
-    private final String dbUrl = "jdbc:mysql://localhost:3307/lmsdb";
-    private final String dbUser = "root";
-    private final String dbPassword = "";
+    private final MongoCollection<Document> collection;
 
     public LearningMaterialService() {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        // 1. Extract the active pool singleton database instance from DBConnection
+        MongoDatabase db = MongoConnection.getDatabase();
+        
+        // 2. Select target cloud collection (Atlas generates this dynamically if it doesn't exist)
+        this.collection = db.getCollection("learning_materials");
     }
 
-    private Connection getConnection() throws Exception {
-        return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-    }
-
-    // Combines validation hooks with database operational writes matching your sequence nodes
+    /**
+     * Executes material validation and data store sequences sequentially.
+     */
     public boolean processAndStoreMaterial(String name, String type, String path) {
-        // validateMaterial() sequence hook node execution
+        
+        // Validation Guard: Verifies incoming file parameter integrity
         if (name == null || name.trim().isEmpty() || path == null) {
             return false; 
         }
         
-        // storeMaterial() sequence hook node execution
-        String sql = "INSERT INTO learning_materials (file_name, file_type, file_path) VALUES (?, ?, ?)";
-        try (Connection conn = getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            stmt.setString(1, name);
-            stmt.setString(2, type);
-            stmt.setString(3, path);
-            
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0; // Returns uploadStatus() -> success mapping
+        try {
+            // Package your metadata properties into a clean BSON document payload
+            Document doc = new Document()
+                    .append("file_name", name.trim())
+                    .append("file_type", type)
+                    .append("file_path", path)
+                    .append("upload_date", new Date()); // Persists live current server timestamp
+
+            // Route transaction payload out over the network into your AWS Cloud database cluster
+            collection.insertOne(doc);
+            return true; // Returns success mapping back up the execution chain
             
         } catch (Exception e) {
+            System.err.println("MongoDB Error caught during material insertion pipeline:");
             e.printStackTrace();
             return false;
         }
     }
 
+    /**
+     * Fetches metadata for all materials sorted by the newest upload date.
+     */
     public List<Map<String, String>> getAllMaterials() {
         List<Map<String, String>> materialsList = new ArrayList<>();
-        String sql = "SELECT * FROM learning_materials ORDER BY upload_date DESC";
         
-        try (Connection conn = getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql); 
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                Map<String, String> material = new HashMap<>();
-                material.put("id", String.valueOf(rs.getInt("id")));
-                material.put("fileName", rs.getString("file_name"));
-                material.put("fileType", rs.getString("file_type"));
-                material.put("filePath", rs.getString("file_path"));
-                material.put("uploadDate", rs.getTimestamp("upload_date").toString());
-                materialsList.add(material);
+        try {
+            // Stream documents utilizing Sorts.descending matching your upload timestamps
+            MongoCursor<Document> cursor = collection.find()
+                                                    .sort(Sorts.descending("upload_date"))
+                                                    .iterator();
+            try {
+                while (cursor.hasNext()) {
+                    Document doc = cursor.next();
+                    Map<String, String> material = new HashMap<>();
+                    
+                    // Convert Hexadecimal cloud Object IDs to Strings so your frontend JSPs can render them
+                    material.put("id", doc.getObjectId("_id").toString());
+                    material.put("fileName", doc.getString("file_name"));
+                    material.put("fileType", doc.getString("file_type"));
+                    material.put("filePath", doc.getString("file_path"));
+                    
+                    // Parse Date entries safely into standard printable string indicators
+                    if (doc.get("upload_date") != null) {
+                        material.put("uploadDate", doc.getDate("upload_date").toString());
+                    } else {
+                        material.put("uploadDate", "");
+                    }
+                    
+                    materialsList.add(material);
+                }
+            } finally {
+                cursor.close(); // Crucial: Safely drop connection cursor to prevent server memory leaks
             }
         } catch (Exception e) {
+            System.err.println("MongoDB Error fetching your materials catalog collection:");
             e.printStackTrace();
         }
         return materialsList;
     }
 
-    public Map<String, String> getMaterialById(int id) {
-        String sql = "SELECT * FROM learning_materials WHERE id = ?";
-        try (Connection conn = getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    /**
+     * Retrieves data parameters matching a unique alphanumeric Hex ObjectId pointer string.
+     */
+    public Map<String, String> getMaterialById(String id) {
+        try {
+            // Re-instantiate your text identifier back into a proper native org.bson.types.ObjectId
+            ObjectId objectId = new ObjectId(id);
             
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    Map<String, String> material = new HashMap<>();
-                    material.put("id", String.valueOf(rs.getInt("id")));
-                    material.put("fileName", rs.getString("file_name"));
-                    material.put("fileType", rs.getString("file_type"));
-                    material.put("filePath", rs.getString("file_path"));
-                    return material;
-                }
+            // Execute a rapid query using the eq() static criteria filter matching your primary key
+            Document doc = collection.find(eq("_id", objectId)).first();
+            
+            if (doc != null) {
+                Map<String, String> material = new HashMap<>();
+                material.put("id", doc.getObjectId("_id").toString());
+                material.put("fileName", doc.getString("file_name"));
+                material.put("fileType", doc.getString("file_type"));
+                material.put("filePath", doc.getString("file_path"));
+                return material;
             }
+        } catch (IllegalArgumentException e) {
+            System.err.println("The provided string format is invalid for MongoDB ObjectId transformation: " + id);
         } catch (Exception e) {
+            System.err.println("Error pulling custom material record from Atlas cloud container:");
             e.printStackTrace();
         }
         return null;
     }
 
-    public void deleteMaterial(int id) {
-        String sql = "DELETE FROM learning_materials WHERE id = ?";
-        try (Connection conn = getConnection(); 
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+    /**
+     * Purges a unique document metadata entry out of the cloud data tier permanently.
+     */
+    public void deleteMaterial(String id) {
+        try {
+            ObjectId objectId = new ObjectId(id);
+            
+            // Fire target record disposal across the cluster matching the specific ObjectId
+            collection.deleteOne(eq("_id", objectId));
+            System.out.println("Document with ID " + id + " cleared from MongoDB Atlas successfully.");
+            
         } catch (Exception e) {
+            System.err.println("NoSQL transaction error caught while executing deleteOne operational routines:");
             e.printStackTrace();
         }
     }

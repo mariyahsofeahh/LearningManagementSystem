@@ -1,10 +1,6 @@
 package lms.controller;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,13 +12,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet
-public class DashboardServlet extends HttpServlet {
+// MongoDB & BSON imports
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoCursor;
+import static com.mongodb.client.model.Filters.eq;
+import lms.db.MongoConnection; // Points to your central cloud credentials helper
+import org.bson.Document;
 
-    // Database Connection Parameters
-    private final String dbUrl = "jdbc:mysql://localhost:3306/lms_database?useSSL=false&serverTimezone=UTC";
-    private final String dbUser = "root";
-    private final String dbPassword = ""; // Set your matching environment password if needed
+//@WebServlet(urlPatterns = { "/DashboardServlet" }) 
+public class DashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -35,22 +34,19 @@ public class DashboardServlet extends HttpServlet {
             return;
         }
 
-        int userId = (Integer) session.getAttribute("userId");
+        // CONVERTED: MongoDB unique Hex Object IDs read cleanly as Strings from session context
+        String userId = (String) session.getAttribute("userId");
         String userRole = (String) session.getAttribute("userRole");
-        String courseIdParam = request.getParameter("courseId");
+        String classCodeParam = request.getParameter("courseId"); // Reads your target layout parameter indicator
 
         try {
-            // Load the MySQL Database Driver
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            
             // =========================================================================
-            // SCENARIO A: Dynamic Interior Course Content Processing (Materials & Tasks Tabs)
+            // SCENARIO A: Dynamic Interior Course Content Processing (Materials & Tasks)
             // =========================================================================
-            if (courseIdParam != null) {
-                int courseId = Integer.parseInt(courseIdParam);
+            if (classCodeParam != null && !classCodeParam.trim().isEmpty()) {
                 
-                // Load core datasets matching this individual specific course ID criteria
-                loadCourseWorkspace(request, courseId);
+                // Load core datasets matching this individual classroom layout code tracking indicator
+                loadCourseWorkspace(request, classCodeParam);
                 
                 // Dispatch straight forward down into your interior shared workspace file view
                 request.getRequestDispatcher("course-workspace.jsp").forward(request, response);
@@ -61,23 +57,31 @@ public class DashboardServlet extends HttpServlet {
             // SCENARIO B: Loading Central Dashboard Course List Matrix Maps
             // =========================================================================
             List<Map<String, String>> enrolledCourses = new ArrayList<>();
-            String courseSelectionQuery = "SELECT c.id, c.course_name, c.course_code FROM courses c " +
-                                          "JOIN enrollments e ON c.id = e.course_id WHERE e.user_id = ?";
             
-            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-                 PreparedStatement stmt = conn.prepareStatement(courseSelectionQuery)) {
-                
-                stmt.setInt(1, userId);
-                
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
+            MongoDatabase db = MongoConnection.getDatabase();
+            MongoCollection<Document> enrollmentCollection = db.getCollection("enrollments");
+            MongoCollection<Document> courseCollection = db.getCollection("courses");
+
+            // Step 1: Scan enrollment collection tracking logs for this student string signature
+            MongoCursor<Document> enrollCursor = enrollmentCollection.find(eq("student_id", userId)).iterator();
+            
+            try {
+                while (enrollCursor.hasNext()) {
+                    String enrolledCode = enrollCursor.next().getString("course_code");
+                    
+                    // Step 2: Query matching collection metadata info payload for each code log pointer found
+                    Document courseDoc = courseCollection.find(eq("course_code", enrolledCode)).first();
+                    
+                    if (courseDoc != null) {
                         Map<String, String> courseMap = new HashMap<>();
-                        courseMap.put("id", String.valueOf(rs.getInt("id")));
-                        courseMap.put("name", rs.getString("course_name"));
-                        courseMap.put("code", rs.getString("course_code"));
+                        courseMap.put("id", courseDoc.getString("course_code")); // Alphanumeric string acts as structural identifier pointer
+                        courseMap.put("name", courseDoc.getString("title"));
+                        courseMap.put("code", courseDoc.getString("course_code"));
                         enrolledCourses.add(courseMap);
                     }
                 }
+            } finally {
+                enrollCursor.close(); // Clean memory pools
             }
             
             // Pass the extracted dynamic data maps context down to the presentation layer
@@ -93,6 +97,7 @@ public class DashboardServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
+            System.err.println("Exception caught navigating dashboard router engine workflows:");
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Dashboard operation routing failure.");
         }
@@ -101,63 +106,56 @@ public class DashboardServlet extends HttpServlet {
     /**
      * Helper routine method that pulls specific sub-module information arrays matching single courses.
      */
-    private void loadCourseWorkspace(HttpServletRequest request, int courseId) throws Exception {
-        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            
-            // Item 1: Fetch Course Header Meta-Data Label Descriptors
-            String queryCourseMeta = "SELECT course_name, course_code FROM courses WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(queryCourseMeta)) {
-                stmt.setInt(1, courseId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        request.setAttribute("selectedCourseName", rs.getString("course_name"));
-                        request.setAttribute("selectedCourseCode", rs.getString("course_code"));
-                        request.setAttribute("selectedCourseId", courseId);
-                    }
-                }
-            }
-
-            // Item 2: Pull Learning Materials mapped precisely to this Course Node
-            List<Map<String, String>> materials = new ArrayList<>();
-            String queryMaterials = "SELECT id, file_name, file_type, upload_date FROM learning_materials WHERE course_id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(queryMaterials)) {
-                stmt.setInt(1, courseId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, String> matItem = new HashMap<>();
-                        matItem.put("id", String.valueOf(rs.getInt("id")));
-                        matItem.put("fileName", rs.getString("file_name"));
-                        matItem.put("fileType", rs.getString("file_type"));
-                        matItem.put("uploadDate", String.valueOf(rs.getTimestamp("upload_date")));
-                        materials.add(matItem);
-                    }
-                }
-            }
-            request.setAttribute("materials", materials);
-
-            // Item 3: Pull Task (Assignment) Records mapped precisely to this Course Node
-            List<Map<String, String>> tasks = new ArrayList<>();
-            String queryTasks = "SELECT id, task_title, due_date FROM tasks WHERE course_id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(queryTasks)) {
-                stmt.setInt(1, courseId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, String> taskItem = new HashMap<>();
-                        taskItem.put("id", String.valueOf(rs.getInt("id")));
-                        taskItem.put("title", rs.getString("task_title"));
-                        taskItem.put("dueDate", String.valueOf(rs.getTimestamp("due_date")));
-                        tasks.add(taskItem);
-                    }
-                }
-            }
-            request.setAttribute("tasks", tasks);
+    private void loadCourseWorkspace(HttpServletRequest request, String classCode) throws Exception {
+        MongoDatabase db = MongoConnection.getDatabase();
+        
+        // Item 1: Fetch Course Header Meta-Data Label Descriptors
+        Document courseDoc = db.getCollection("courses").find(eq("course_code", classCode)).first();
+        if (courseDoc != null) {
+            request.setAttribute("selectedCourseName", courseDoc.getString("title"));
+            request.setAttribute("selectedCourseCode", courseDoc.getString("course_code"));
+            request.setAttribute("selectedCourseId", classCode);
         }
+
+        // Item 2: Pull Learning Materials mapped precisely to this Course String Node Pointer
+        List<Map<String, String>> materials = new ArrayList<>();
+        MongoCursor<Document> matCursor = db.getCollection("learning_materials").find(eq("course_code", classCode)).iterator();
+        try {
+            while (matCursor.hasNext()) {
+                Document doc = matCursor.next();
+                Map<String, String> matItem = new HashMap<>();
+                matItem.put("id", doc.getObjectId("_id").toString()); // Object IDs map down to text elements nicely
+                matItem.put("fileName", doc.getString("file_name"));
+                matItem.put("fileType", doc.getString("file_type"));
+                matItem.put("uploadDate", doc.getString("upload_date"));
+                materials.add(matItem);
+            }
+        } finally {
+            matCursor.close();
+        }
+        request.setAttribute("materials", materials);
+
+        // Item 3: Pull Task (Assignment) Records mapped precisely to this Course String Node Pointer
+        List<Map<String, String>> tasks = new ArrayList<>();
+        MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_id", classCode)).iterator();
+        try {
+            while (taskCursor.hasNext()) {
+                Document doc = taskCursor.next();
+                Map<String, String> taskItem = new HashMap<>();
+                taskItem.put("id", doc.getObjectId("_id").toString());
+                taskItem.put("title", doc.getString("title"));
+                taskItem.put("dueDate", doc.getString("deadline"));
+                tasks.add(taskItem);
+            }
+        } finally {
+            taskCursor.close();
+        }
+        request.setAttribute("tasks", tasks);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Explicitly route accidental or target POST adjustments safely over to the query method engines
         doGet(request, response);
     }
 }

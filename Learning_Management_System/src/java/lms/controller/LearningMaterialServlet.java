@@ -1,9 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package lms.controller;
-
 
 import lms.service.LearningMaterialService;
 import java.io.File;
@@ -12,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-@WebServlet
+// Nota: @WebServlet dibuang kerana anda menguruskannya melalui web.xml sahaja!
+
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2,  // 2MB
     maxFileSize = 1024 * 1024 * 50,       // 50MB
@@ -35,28 +30,37 @@ public class LearningMaterialServlet extends HttpServlet {
         
         String action = request.getParameter("action");
         
-        // Simulating sequence diagram roles. In production, pull role context from standard HttpSession.
+        // Mengambil peranan pengguna (Lecturer / Student) dari parameter atau session
         String currentRole = (request.getParameter("role") != null) ? request.getParameter("role") : "student";
         
         if ("view".equals(action)) {
-            // Logic to fetch full file object stream and pipe into browser container window
-            int id = Integer.parseInt(request.getParameter("id"));
+            // DIUBAH: Menggunakan String bagi menyokong format Alphanumeric ObjectId MongoDB
+            String id = request.getParameter("id");
+            
             Map<String, String> material = materialService.getMaterialById(id);
             if (material != null) {
                 File file = new File(material.get("filePath"));
                 response.setContentType(material.get("fileType"));
                 response.setHeader("Content-Length", String.valueOf(file.length()));
+                
+                // Menyalin fail fizikal dari server folder terus ke paparan browser pengguna
                 java.nio.file.Files.copy(file.toPath(), response.getOutputStream());
                 return;
+            } else {
+                response.sendRedirect("LearningMaterialServlet?role=" + currentRole + "&error=notfound");
+                return;
             }
+            
         } else if ("delete".equals(action)) {
-            int id = Integer.parseInt(request.getParameter("id"));
+            // DIUBAH: Menggunakan String bagi menyokong format Alphanumeric ObjectId MongoDB
+            String id = request.getParameter("id");
+            
             materialService.deleteMaterial(id);
             response.sendRedirect("LearningMaterialServlet?role=lecturer&success=true");
             return;
         }
 
-        // Default: Fetch directory metadata and dispatch context forward
+        // Laluan Default: Ambil senarai metadata dokumen dari MongoDB Cloud dan hantar ke JSP
         List<Map<String, String>> materials = materialService.getAllMaterials();
         request.setAttribute("materials", materials);
         
@@ -71,13 +75,13 @@ public class LearningMaterialServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // Maps directly to sequence node: sendUploadRequest()
+        // Membaca lokasi direktori penyimpanan folder di dalam Tomcat tempatan
         String applicationPath = request.getServletContext().getRealPath("");
         String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR;
         
         File uploadFolder = new File(uploadFilePath);
         if (!uploadFolder.exists()) {
-            uploadFolder.mkdirs();
+            uploadFolder.mkdirs(); // Bina folder uploads jika belum wujud
         }
 
         try {
@@ -86,10 +90,11 @@ public class LearningMaterialServlet extends HttpServlet {
             String contentType = part.getContentType();
             String completePath = uploadFilePath + File.separator + fileName;
             
-            // Execute physical file write target to localized server container storage
+            // 1. Simpan fail fizikal (PDF/Video) ke dalam hard drive laptop (Tomcat server)
             part.write(completePath);
             
-            // Pass parameters downwards to complete validateMaterial() and storeMaterial() workflows
+            // 2. Hantar maklumat nama fail, jenis fail, dan lokasi path ke Service Layer 
+            // untuk disimpan ke dalam pangkalan data cloud MongoDB Atlas
             boolean isStored = materialService.processAndStoreMaterial(fileName, contentType, completePath);
             
             if (isStored) {
@@ -98,6 +103,7 @@ public class LearningMaterialServlet extends HttpServlet {
                 response.sendRedirect("LearningMaterialServlet?role=lecturer&error=failed");
             }
         } catch (Exception e) {
+            System.err.println("Ralat pemprosesan muat naik di LearningMaterialServlet:");
             e.printStackTrace();
             response.sendRedirect("LearningMaterialServlet?role=lecturer&error=exception");
         }
