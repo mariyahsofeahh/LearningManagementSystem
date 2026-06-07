@@ -17,10 +17,10 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCursor;
 import static com.mongodb.client.model.Filters.eq;
-import lms.db.MongoConnection; // Points to your central cloud credentials helper
+import lms.db.MongoConnection; 
 import org.bson.Document;
 
-//@WebServlet(urlPatterns = { "/DashboardServlet" }) 
+
 public class DashboardServlet extends HttpServlet {
 
     @Override
@@ -30,14 +30,13 @@ public class DashboardServlet extends HttpServlet {
         // 1. Strict Session Verification Check
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
 
-        // CONVERTED: MongoDB unique Hex Object IDs read cleanly as Strings from session context
         String userId = (String) session.getAttribute("userId");
         String userRole = (String) session.getAttribute("userRole");
-        String classCodeParam = request.getParameter("courseId"); // Reads your target layout parameter indicator
+        String classCodeParam = request.getParameter("courseId"); 
 
         try {
             // =========================================================================
@@ -48,8 +47,8 @@ public class DashboardServlet extends HttpServlet {
                 // Load core datasets matching this individual classroom layout code tracking indicator
                 loadCourseWorkspace(request, classCodeParam);
                 
-                // Dispatch straight forward down into your interior shared workspace file view
-                request.getRequestDispatcher("course-workspace.jsp").forward(request, response);
+                // MODIFIED: Forward straight down to your functional course details view file
+                request.getRequestDispatcher("/courseDetails.jsp").forward(request, response);
                 return;
             }
 
@@ -74,14 +73,14 @@ public class DashboardServlet extends HttpServlet {
                     
                     if (courseDoc != null) {
                         Map<String, String> courseMap = new HashMap<>();
-                        courseMap.put("id", courseDoc.getString("course_code")); // Alphanumeric string acts as structural identifier pointer
+                        courseMap.put("id", courseDoc.getString("course_code")); 
                         courseMap.put("name", courseDoc.getString("title"));
                         courseMap.put("code", courseDoc.getString("course_code"));
                         enrolledCourses.add(courseMap);
                     }
                 }
             } finally {
-                enrollCursor.close(); // Clean memory pools
+                enrollCursor.close(); 
             }
             
             // Pass the extracted dynamic data maps context down to the presentation layer
@@ -91,9 +90,9 @@ public class DashboardServlet extends HttpServlet {
             // ROLE-BASED DYNAMIC VIEW DISPATCHING ENGINE
             // =========================================================================
             if ("lecturer".equalsIgnoreCase(userRole)) {
-                request.getRequestDispatcher("lecturer/dashboard-lecturer.jsp").forward(request, response);
+                request.getRequestDispatcher("/lecturer/dashboard-lecturer.jsp").forward(request, response);
             } else {
-                request.getRequestDispatcher("student/dashboard-student.jsp").forward(request, response);
+                request.getRequestDispatcher("/student/dashboard-student.jsp").forward(request, response);
             }
 
         } catch (Exception e) {
@@ -103,28 +102,41 @@ public class DashboardServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Helper routine method that pulls specific sub-module information arrays matching single courses.
-     */
     private void loadCourseWorkspace(HttpServletRequest request, String classCode) throws Exception {
         MongoDatabase db = MongoConnection.getDatabase();
         
+        // =========================================================================
         // Item 1: Fetch Course Header Meta-Data Label Descriptors
+        // =========================================================================
         Document courseDoc = db.getCollection("courses").find(eq("course_code", classCode)).first();
         if (courseDoc != null) {
+            // FIXED: Instantiating the object right here solves the front-end 'null' issue
+            lms.model.Course course = new lms.model.Course();
+            course.setTitle(courseDoc.getString("title"));
+            course.setDescription(courseDoc.getString("description"));
+            course.setCourseCode(courseDoc.getString("course_code"));
+            
+            // Bind the object structure so courseDetails.jsp can call c.getTitle() safely
+            request.setAttribute("course", course);
+
+            // Retaining your old standalone tracking labels intact as structural fallback variables
             request.setAttribute("selectedCourseName", courseDoc.getString("title"));
             request.setAttribute("selectedCourseCode", courseDoc.getString("course_code"));
             request.setAttribute("selectedCourseId", classCode);
+            request.setAttribute("selectedCourseDesc", courseDoc.getString("description"));
+            request.setAttribute("selectedLecturerId", courseDoc.get("lecturer_id") != null ? courseDoc.get("lecturer_id").toString() : "N/A");
         }
 
+        // =========================================================================
         // Item 2: Pull Learning Materials mapped precisely to this Course String Node Pointer
+        // =========================================================================
         List<Map<String, String>> materials = new ArrayList<>();
         MongoCursor<Document> matCursor = db.getCollection("learning_materials").find(eq("course_code", classCode)).iterator();
         try {
             while (matCursor.hasNext()) {
                 Document doc = matCursor.next();
                 Map<String, String> matItem = new HashMap<>();
-                matItem.put("id", doc.getObjectId("_id").toString()); // Object IDs map down to text elements nicely
+                matItem.put("id", doc.getObjectId("_id").toString()); 
                 matItem.put("fileName", doc.getString("file_name"));
                 matItem.put("fileType", doc.getString("file_type"));
                 matItem.put("uploadDate", doc.getString("upload_date"));
@@ -135,7 +147,9 @@ public class DashboardServlet extends HttpServlet {
         }
         request.setAttribute("materials", materials);
 
+        // =========================================================================
         // Item 3: Pull Task (Assignment) Records mapped precisely to this Course String Node Pointer
+        // =========================================================================
         List<Map<String, String>> tasks = new ArrayList<>();
         MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_id", classCode)).iterator();
         try {

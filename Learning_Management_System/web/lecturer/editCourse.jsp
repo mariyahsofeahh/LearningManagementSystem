@@ -5,7 +5,7 @@
 --%>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="model.Course" %>
+<%@ page import="lms.model.Course" %>
 <% Course course = (Course) request.getAttribute("course"); %>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +33,8 @@
     <h1>Edit Class Settings</h1>
     
     <form action="${pageContext.request.contextPath}/course/update" method="POST">
-        <input type="hidden" name="courseId" value="<%= course.getCourseId() %>">
+        <%-- FIXED: Changed 'name' to classCode and 'value' to getCourseCode() to sync with your servlet and MongoDB --%>
+        <input type="hidden" name="classCode" value="<%= course.getCourseCode() %>">
         
         <div class="form-group">
             <label>Update Class Title</label>
@@ -44,7 +45,8 @@
             <textarea name="description" rows="6" required><%= course.getDescription() %></textarea>
         </div>
         <div class="action-row">
-            <button type="button" class="btn cancel" onclick="window.location.href='${pageContext.request.contextPath}/course/view?id=<%= course.getCourseId() %>'">Cancel</button>
+            <%-- FIXED: Changed link parameter to id=course.getCourseCode() so the cancel button safely routes back to your dashboard view --%>
+            <button type="button" class="btn cancel" onclick="window.location.href='${pageContext.request.contextPath}/course/view?id=<%= course.getCourseCode() %>'">Cancel</button>
             <button type="submit" class="btn submit">Save Details</button>
         </div>
     </form>

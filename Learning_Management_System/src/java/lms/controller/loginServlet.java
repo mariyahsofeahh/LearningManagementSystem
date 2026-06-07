@@ -11,7 +11,7 @@ import lms.DAO.UserDAO; // Importing your clean MongoDB operations wrapper
 import lms.service.UserService;
 import org.bson.Document;
 
-//@WebServlet(urlPatterns = { "/loginServlet" }) // Make sure the path pattern string matches your form action
+
 public class loginServlet extends HttpServlet {
 
     private final UserDAO userDAO = new UserDAO();

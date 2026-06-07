@@ -36,29 +36,62 @@
     </nav>
 
     <div class="container my-5">
-        <div class="mb-5">
-            <h1 class="fw-bold tracking-tight mb-1">My Enrolled Courses</h1>
-            <p class="text-muted">Select a module workspace node to review learning assets and tasks.</p>
+    <% if(request.getParameter("success") != null && "enrolled".equals(request.getParameter("success"))) { %>
+        <div class="alert alert-success alert-dismissible fade show rounded-4 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> Successfully joined the class!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    <% } %>
+    <% if(request.getParameter("error") != null && "invalidcode".equals(request.getParameter("error"))) { %>
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 mb-4" role="alert">
+            <i class="bi bg-exclamation-triangle-fill me-2"></i> Code unrecognized. Verification failure.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
 
-        <div class="row g-4">
-            <% 
-                List<Map<String, String>> courses = (List<Map<String, String>>) request.getAttribute("courses");
-                if (courses != null && !courses.isEmpty()) {
-                    for (Map<String, String> course : courses) {
-            %>
-            <div class="col-xl-4 col-md-6">
-                <a href="DashboardServlet?courseId=<%= course.get("id") %>" class="card course-card h-100 p-4">
-                    <div class="d-flex align-items-center justify-content-between mb-4">
-                        <span class="badge bg-primary-subtle text-primary font-monospace rounded-pill small"><%= course.get("code") %></span>
-                        <i class="bi bi-arrow-right-circle fs-4 text-muted"></i>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-2"><%= course.get("name") %></h4>
-                    <p class="text-muted small mt-auto mb-0"><i class="bi bi-circle-fill text-success me-1" style="font-size:0.6rem;"></i> Synchronized</p>
-                </a>
-            </div>
-            <% } } %>
+    <div class="row align-items-center mb-5 g-4">
+        <div class="col-md-6">
+            <h1 class="fw-bold tracking-tight mb-1">My Enrolled Courses</h1>
+            <p class="text-muted mb-0">Select a module workspace node to review learning assets and tasks.</p>
+        </div>
+        <div class="col-md-6">
+            <form action="<%= request.getContextPath() %>/course/enroll" method="POST" class="d-flex gap-2 justify-content-md-end">
+                <input type="hidden" name="studentId" value="<%= session.getAttribute("userId") %>">
+                
+                <div class="input-group" style="max-width: 350px;">
+                    <span class="input-group-text bg-white border-end-0 text-muted rounded-start-3"><i class="bi bi-key"></i></span>
+                    <input type="text" name="classCode" class="form-control border-start-0 bg-white" placeholder="Enter Class Code (e.g. ddc26c)" required>
+                </div>
+                <button type="submit" class="btn btn-success rounded-3 px-4 fw-medium">Join Class</button>
+            </form>
         </div>
     </div>
+
+    <div class="row g-4">
+        <% 
+            List<Map<String, String>> courses = (List<Map<String, String>>) request.getAttribute("courses");
+            if (courses != null && !courses.isEmpty()) {
+                for (Map<String, String> course : courses) {
+        %>
+        <div class="col-xl-4 col-md-6">
+            <a href="DashboardServlet?courseId=<%= course.get("id") %>" class="card course-card h-100 p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <span class="badge bg-primary-subtle text-primary font-monospace rounded-pill small"><%= course.get("code") %></span>
+                    <i class="bi bi-arrow-right-circle fs-4 text-muted"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-2"><%= course.get("name") %></h4>
+                <p class="text-muted small mt-auto mb-0"><i class="bi bi-circle-fill text-success me-1" style="font-size:0.6rem;"></i> Synchronized</p>
+            </a>
+        </div>
+        <% } } else { %>
+            <div class="col-12 text-center py-5">
+                <div class="text-muted fs-4 mb-2"><i class="bi bi-folder-x fs-1"></i></div>
+                <p class="text-muted">You are not enrolled in any classes yet. Enter a class code above to begin!</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

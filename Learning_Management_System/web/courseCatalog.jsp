@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
-<%@ page import="model.Course" %>
+<%@ page import="lms.model.Course" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,12 +25,29 @@
 </head>
 <body>
 
+<%
+    // Fetch user details from the session variables setup during login
+    String userRole = (String) session.getAttribute("userRole");
+    String loggedInUserId = (String) session.getAttribute("userId");
+    
+    // Fallback if session happens to be empty during direct URL testing
+    if (loggedInUserId == null) {
+        loggedInUserId = "S76237"; 
+    }
+%>
+
 <div class="nav-container">
     <form action="${pageContext.request.contextPath}/course/enroll" method="POST" class="join-box">
-        <input type="hidden" name="studentId" value="S76237"> <input type="text" name="classCode" placeholder="Enter Class Code (e.g. ox7v2b)" required>
+        <%-- FIXED: Changed hardcoded studentId to use the dynamic session value --%>
+        <input type="hidden" name="studentId" value="<%= loggedInUserId %>"> 
+        <input type="text" name="classCode" placeholder="Enter Class Code (e.g. ox7v2b)" required>
         <button type="submit" class="btn" style="background:#1e8e3e;">Join Class</button>
     </form>
-    <a href="${pageContext.request.contextPath}/course/create" class="btn">+ Create Class</a>
+    
+    <%-- ROLE CONDITION CHECK: Only render the link button if the user is a lecturer --%>
+    <% if ("lecturer".equalsIgnoreCase(userRole)) { %>
+        <a href="${pageContext.request.contextPath}/course/create" class="btn">+ Create Class</a>
+    <% } %>
 </div>
 
 <% if(request.getParameter("error") != null) { %>
@@ -49,17 +66,21 @@
                     <span class="code-pill">Code: <%= c.getCourseCode() %></span>
                 </div>
                 <div class="card-body">
-                    <p><%= c.getDescription().length() > 140 ? c.getDescription().substring(0, 140) + "..." : c.getDescription() %></p>
+                    <%-- Added a null pointer safety check for descriptions --%>
+                    <p>
+                        <%= (c.getDescription() != null && c.getDescription().length() > 140) ? 
+                            c.getDescription().substring(0, 140) + "..." : c.getDescription() %>
+                    </p>
                 </div>
                 <div class="card-footer">
-                    <a href="${pageContext.request.contextPath}/course/view?id=<%= c.getCourseId() %>" class="view-btn">Open Class Stream →</a>
+                    <a href="${pageContext.request.contextPath}/course/view?id=<%= c.getCourseCode() %>" class="view-btn">Open Class Stream →</a>
                 </div>
             </div>
     <% 
             }
         } else {
     %>
-        <p style="color: #5f6368;">No active classrooms found in MySQL database storage.</p>
+        <p style="color: #5f6368;">No active classrooms found in your storage collection backend.</p>
     <% } %>
 </div>
 

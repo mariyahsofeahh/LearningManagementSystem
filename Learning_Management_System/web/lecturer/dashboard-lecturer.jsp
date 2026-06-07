@@ -41,7 +41,10 @@
                 <h1 class="fw-bold tracking-tight mb-1">Instructional Control Console</h1>
                 <p class="text-muted mb-0">Manage assigned curriculum structures and evaluate student pipeline submissions.</p>
             </div>
-            <button class="btn btn-dark rounded-3 px-4 py-2 fw-medium"><i class="bi bi-plus-lg me-2"></i>Create New Course</button>
+
+            <a href="${pageContext.request.contextPath}/lecturer/createCourse.jsp" class="btn btn-dark rounded-3 px-4 py-2 fw-medium">
+                <i class="bi bi-plus-lg me-2"></i>Create New Course
+            </a>
         </div>
 
         <div class="row g-4">

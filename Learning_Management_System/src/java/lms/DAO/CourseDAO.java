@@ -1,157 +1,127 @@
-package  lms.DAO;
+package lms.DAO;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.model.Sorts;
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.and;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import lms.model.Course;
-import lms.db.MongoConnection; // Points to your central cloud connection helper
+import lms.db.MongoConnection;
+import lms.model.Course; // Crucial import
 import org.bson.Document;
-import org.bson.types.ObjectId;
 
-public class CourseDAO { 
+public class CourseDAO {
 
-    private final MongoCollection<Document> courseCollection;
-    private final MongoCollection<Document> enrollmentCollection;
-
-    public CourseDAO() {
-        // 1. Get the live cloud connection instance
-        MongoDatabase db = MongoConnection.getDatabase();
-        
-        // 2. Map your collections (MongoDB creates them on the fly if they don't exist)
-        this.courseCollection = db.getCollection("courses");
-        this.enrollmentCollection = db.getCollection("enrollments");
-    }
-
-    // ==========================================
-    // CREATE COURSE WITH AUTO-GENERATED CLASS CODE
-    // ==========================================
-    public boolean createCourse(Course course) {
-        try {
-            // Generate unique 6-character code (Google Classroom style)
-            String uniqueClassCode = UUID.randomUUID().toString().substring(0, 6).toLowerCase();
-
-            // 3. Package your data fields neatly into a document payload
-            Document doc = new Document()
-                    .append("course_code", uniqueClassCode)
-                    .append("title", course.getTitle())
-                    .append("description", course.getDescription())
-                    .append("lecturer_id", course.getLecturerId());
-
-            // 4. Send payload across the internet straight to the cloud cluster
-            courseCollection.insertOne(doc);
-            return true;
-            
-        } catch (Exception e) {
-            System.err.println("MongoDB Error creating course:");
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // ==========================================
-    // GET ALL ACTIVE COURSES
-    // ==========================================
+    // 1. FIXES LINE 24: Returns a Java List of Course objects
     public List<Course> getAllCourses() {
         List<Course> list = new ArrayList<>();
         try {
-            // 5. Query courses sorted by internal timestamp ID descending
-            MongoCursor<Document> cursor = courseCollection.find()
-                                                          .sort(Sorts.descending("_id"))
-                                                          .iterator();
-
-            try {
-                while (cursor.hasNext()) {
-                    Document doc = cursor.next();
-                    Course c = new Course();
-                    
-                    // Note: If courseId is an Int in your model, you can read a custom integer, 
-                    // or map your model field to use String to support standard Hex ObjectIDs from MongoDB.
-                    // If your model handles an Integer fallback, you can do: c.setCourseId(doc.getInteger("course_id"));
-                    
-                    c.setCourseCode(doc.getString("course_code"));
-                    c.setTitle(doc.getString("title"));
-                    c.setDescription(doc.getString("description"));
-                    c.setLecturerId(doc.getInteger("lecturer_id"));
-                    list.add(c);
-                }
-            } finally {
-                cursor.close(); // Prevent network cursor memory leaks
+            MongoDatabase db = MongoConnection.getDatabase();
+            MongoCollection<Document> collection = db.getCollection("courses");
+            MongoCursor<Document> cursor = collection.find().iterator();
+            
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                Course course = new Course();
+                course.setTitle(doc.getString("title"));
+                course.setDescription(doc.getString("description"));
+                
+                // Keep code consistent with your schema definitions
+                course.setCourseCode(doc.getString("course_code") != null ? doc.getString("course_code") : doc.getObjectId("_id").toString());
+                list.add(course);
             }
+            cursor.close();
         } catch (Exception e) {
-            System.err.println("MongoDB Error fetching all courses:");
             e.printStackTrace();
         }
         return list;
     }
 
-    // ==========================================
-    // GET COURSE BY ID (Using MongoDB hex code string or field match)
-    // ==========================================
-    public Course getCourseById(String courseCode) {
-        Course c = null;
+    // 2. FIXES LINE 30: Finds a single course by its unique ID/Code
+    public Course getCourseById(String classCode) {
         try {
-            // 6. Use eq() filter to find the document with a matching field string
-            Document doc = courseCollection.find(eq("course_code", courseCode)).first();
-
+            MongoDatabase db = MongoConnection.getDatabase();
+            Document doc = db.getCollection("courses").find(eq("course_code", classCode)).first();
+            
             if (doc != null) {
-                c = new Course();
-                c.setCourseCode(doc.getString("course_code"));
-                c.setTitle(doc.getString("title"));
-                c.setDescription(doc.getString("description"));
-                c.setLecturerId(doc.getInteger("lecturer_id"));
+                Course course = new Course();
+                course.setTitle(doc.getString("title"));
+                course.setDescription(doc.getString("description"));
+                course.setCourseCode(doc.getString("course_code"));
+                return course;
             }
         } catch (Exception e) {
-            System.err.println("MongoDB Error finding course by code:");
             e.printStackTrace();
         }
-        return c;
+        return null;
     }
 
-    // ==========================================
-    // JOIN CLASSROOM VIA UNIQUE GOOGLE CODE
-    // ==========================================
-    public boolean enrollStudentByCode(String studentId, String classCode) {
+    // 3. FIXES LINE 71: Inserts a Course object into MongoDB Atlas Cloud
+    public boolean createCourse(Course course) {
         try {
-            String cleanCode = classCode.trim().toLowerCase();
-
-            // Step A: Find the course document matching the unique entered classroom code
-            Document courseDoc = courseCollection.find(eq("course_code", cleanCode)).first();
-
-            if (courseDoc != null) {
-                String courseCodeStr = courseDoc.getString("course_code");
-
-                // Step B: Use combined 'and()' filtering to verify if student is already enrolled
-                Document existingEnrollment = enrollmentCollection.find(
-                    and(eq("student_id", studentId), eq("course_code", courseCodeStr))
-                ).first();
-
-                if (existingEnrollment != null) {
-                    return true; // Already enrolled, trigger immediate safe navigation fallback
-                }
-
-                // Step C: Insert a new transaction log payload into the enrollment cluster layer
-                Document enrollDoc = new Document()
-                        .append("student_id", studentId)
-                        .append("course_code", courseCodeStr);
-
-                enrollmentCollection.insertOne(enrollDoc);
-                return true;
-            }
+            MongoDatabase db = MongoConnection.getDatabase();
+            MongoCollection<Document> collection = db.getCollection("courses");
             
-            System.out.println("Enrollment Failed: Classroom code not found.");
-            return false;
-            
+            // Generate a simple short code for your students to use when joining
+            String randomCode = Long.toHexString(Double.doubleToLongBits(Math.random())).substring(0, 6);
+
+            Document doc = new Document()
+                    .append("course_code", randomCode)
+                    .append("title", course.getTitle())
+                    .append("description", course.getDescription())
+                    .append("lecturer_id", course.getLecturerId());
+
+            collection.insertOne(doc);
+            return true;
         } catch (Exception e) {
-            System.err.println("MongoDB Error handling enrollment:");
             e.printStackTrace();
             return false;
         }
     }
+
+    // This method handles the student enrollment logic
+    public boolean enrollStudentByCode(String studentId, String courseCode) {
+        try {
+            MongoDatabase db = MongoConnection.getDatabase();
+            Document targetCourse = db.getCollection("courses").find(eq("course_code", courseCode)).first();
+            
+            if (targetCourse == null) {
+                return false; // Code doesn't exist
+            }
+
+            Document newEnrollment = new Document()
+                    .append("student_id", studentId)
+                    .append("course_code", courseCode);
+
+            db.getCollection("enrollments").insertOne(newEnrollment);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    // Add this method inside your CourseDAO class to handle updates
+public boolean updateCourse(Course course) {
+    try {
+        com.mongodb.client.MongoDatabase db = lms.db.MongoConnection.getDatabase();
+        com.mongodb.client.MongoCollection<org.bson.Document> collection = db.getCollection("courses");
+        
+        // 1. Locate the document matching the classroom code string and push updates
+        long modifiedCount = collection.updateOne(
+            com.mongodb.client.model.Filters.eq("course_code", course.getCourseCode()),
+            com.mongodb.client.model.Updates.combine(
+                com.mongodb.client.model.Updates.set("title", course.getTitle()),
+                com.mongodb.client.model.Updates.set("description", course.getDescription())
+            )
+        ).getModifiedCount();
+        
+        // Returns true if a document was successfully updated in MongoDB Atlas
+        return modifiedCount > 0;
+    } catch (Exception e) {
+        System.err.println("Error syncing classroom updates to MongoDB:");
+        e.printStackTrace();
+        return false;
+    }
+}
 }
