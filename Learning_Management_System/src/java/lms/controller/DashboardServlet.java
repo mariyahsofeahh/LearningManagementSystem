@@ -91,9 +91,9 @@ public class DashboardServlet extends HttpServlet {
             // ROLE-BASED DYNAMIC VIEW DISPATCHING ENGINE
             // =========================================================================
             if ("lecturer".equalsIgnoreCase(userRole)) {
-                request.getRequestDispatcher("dashboard-lecturer.jsp").forward(request, response);
+                request.getRequestDispatcher("lecturer/dashboard-lecturer.jsp").forward(request, response);
             } else {
-                request.getRequestDispatcher("dashboard-student.jsp").forward(request, response);
+                request.getRequestDispatcher("student/dashboard-student.jsp").forward(request, response);
             }
 
         } catch (Exception e) {

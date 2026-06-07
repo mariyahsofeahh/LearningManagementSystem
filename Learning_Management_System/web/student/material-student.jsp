@@ -49,28 +49,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg glass-nav sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-700 text-dark d-flex align-items-center" href="#">
-                <span class="bg-primary text-white p-2 rounded-3 me-2 d-inline-flex"><i class="bi bi-layers-half"></i></span>
-                <span class="fw-bold tracking-tight">eduSphere</span>
-            </a>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto bg-light p-1 rounded-pill px-3">
-                    <li class="nav-item"><a class="nav-link text-muted px-3" href="#">Overview</a></li>
-                    <li class="nav-item"><a class="nav-link active text-primary fw-semibold px-3" href="LearningMaterialServlet">Repository</a></li>
-                    <li class="nav-item"><a class="nav-link text-muted px-3" href="#">Syllabus</a></li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <div class="text-end me-3 d-none d-sm-block">
-                        <p class="small fw-semibold mb-0">Alex Mercer</p>
-                        <p class="text-muted mb-0 style" style="font-size: 0.75rem;">Undergraduate</p>
-                    </div>
-                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" class="rounded-circle border" width="40" height="40" alt="Avatar">
-                </div>
-            </div>
-        </div>
-    </nav>
+  <%@ include file="header-stud.jsp" %>
 
     <div class="container my-5">
         <div class="row align-items-center mb-5 row-gap-3">
