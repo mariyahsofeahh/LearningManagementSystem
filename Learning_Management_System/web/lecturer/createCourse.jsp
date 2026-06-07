@@ -51,17 +51,6 @@
     </form>
 </div>
             
-            <!<!-- show error message -->           
-<%
-if("duplicatecode".equals(request.getParameter("error"))) {
-%>
-
-<p style="color:red;margin-bottom:15px;">
-    Course Code already exists.
-</p>
-
-<%
-}
-%>
+           
 </body>
 </html>
