@@ -15,7 +15,7 @@ import javax.servlet.http.HttpSession;
 import lms.DAO.CourseDAO;
 import lms.model.Course;
 
-@WebServlet("/course/*") // Remove this if you map it inside web.xml instead!
+
 public class CourseServlet extends HttpServlet {
 
     private final CourseDAO repository = new CourseDAO();
