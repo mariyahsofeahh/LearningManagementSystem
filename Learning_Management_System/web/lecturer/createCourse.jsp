@@ -32,25 +32,21 @@
     <p style="color:#5f6368; font-size:14px; margin-bottom:20px;">Deploy new active stream profile mappings onto the core data cluster tier.</p>
     
     <form action="${pageContext.request.contextPath}/course/create" method="POST">
-        <div class="form-group">
-            <label>Course Title</label>
-            <input type="text" name="title" placeholder="e.g., Software Architecture Foundations" required>
+        <div class="mb-3">
+            <label>Course Code:</label>
+            <input type="text" name="courseCode" class="form-control" placeholder="e.g., CSF3043" required>
         </div>
-        <div class="form-group">
-            <label>Course Code</label>
-            <input type="text" name="courseCode" placeholder="e.g., CSE3433" required>
+        <div class="mb-3">
+            <label>Course Title:</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g., Object Oriented Programming" required>
         </div>
-        <div class="form-group">
-            <label>Syllabus Layout / Meta Description</label>
-            <textarea name="description" rows="5" placeholder="Define requirements and operational schedules..." required></textarea>
+        <div class="mb-3">
+            <label>Description:</label>
+            <textarea name="description" class="form-control" required></textarea>
         </div>
-        <div class="action-row">
-            <button type="button" class="btn cancel" onclick="window.location.href='${pageContext.request.contextPath}/course/catalog'">Cancel</button>
-            <button type="submit" class="btn submit">Create</button>
-        </div>
+        <button type="submit" class="btn btn-primary">Create Course</button>
     </form>
 </div>
-            
-           
+                 
 </body>
 </html>
