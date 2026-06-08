@@ -39,16 +39,21 @@ public class CourseDAO {
 
     // Retrieve courses managed by a specific lecturer
     public List<Course> getCoursesByLecturer(String lecturerId) {
-        List<Course> list = new ArrayList<>();
-        try (MongoCursor<Document> cursor = courseCollection.find(eq("lecturer_id", lecturerId)).iterator()) {
-            while (cursor.hasNext()) {
-                list.add(mapDocumentToCourse(cursor.next()));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    List<Course> list = new ArrayList<>();
+    
+    // Query matching the specific lecturer ID pointer
+    try (MongoCursor<Document> cursor = courseCollection.find(eq("lecturer_id", lecturerId)).iterator()) {
+        while (cursor.hasNext()) {
+            Document doc = cursor.next();
+            
+            // 🌟 FIX: Use the unified mapping method to ensure ALL attributes (including courseCode) are populated
+            list.add(mapDocumentToCourse(doc));
         }
-        return list;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+    return list;
+}
 
     // Fetch details of a single course using its code (e.g., CSE3433)
     public Course getCourseByCode(String courseCode) {
@@ -67,11 +72,11 @@ public class CourseDAO {
     public boolean createCourse(Course course) {
         try {
             Document doc = new Document()
-                    .append("course_code", course.getCourseCode())
-                    .append("title", course.getTitle())
-                    .append("description", course.getDescription())
+                    .append("course_code", course.getCourseCode().trim().toUpperCase()) // Store clean & uppercase
+                    .append("title", course.getTitle().trim())
+                    .append("description", course.getDescription().trim())
                     .append("lecturer_id", course.getLecturerId());
-            
+        
             courseCollection.insertOne(doc);
             return true;
         } catch (Exception e) {

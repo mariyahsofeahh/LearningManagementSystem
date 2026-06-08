@@ -61,24 +61,39 @@ public class CourseServlet extends HttpServlet {
     }
     
     private void registerNewCourse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Course course = new Course();
-    
-        course.setCourseCode(request.getParameter("courseCode"));
-        course.setTitle(request.getParameter("title"));
-        course.setDescription(request.getParameter("description"));
-    
-        String sessionUid = (String) request.getSession().getAttribute("userId");
-        if (sessionUid == null || sessionUid.trim().isEmpty()) {
-            sessionUid = "75776"; 
-        }
-        course.setLecturerId(sessionUid);
-    
-        if (repository.createCourse(course)) {
-            response.sendRedirect(request.getContextPath() + "/course/catalog?success=created");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=true");
-        }
+    Course course = new Course();
+
+    // 🌟 IMPORTANT: Double check that your createCourse.jsp input field has name="courseCode"
+    String manualCode = request.getParameter("courseCode");
+    String title = request.getParameter("title");
+    String description = request.getParameter("description");
+
+    // Simple validation block to make sure nothing is empty
+    if (manualCode == null || manualCode.trim().isEmpty() || title == null || title.trim().isEmpty()) {
+        response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=missingfields");
+        return;
     }
+
+    course.setCourseCode(manualCode);
+    course.setTitle(title);
+    course.setDescription(description);
+
+    // Pull secure creator ID from session
+    HttpSession session = request.getSession(false);
+    String sessionUid = (session != null) ? (String) session.getAttribute("userId") : null;
+    
+    if (sessionUid == null) {
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
+        return;
+    }
+    course.setLecturerId(sessionUid);
+
+    if (repository.createCourse(course)) {
+        response.sendRedirect(request.getContextPath() + "/course/catalog?success=created");
+    } else {
+        response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=true");
+    }
+}
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
