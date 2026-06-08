@@ -5,82 +5,250 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Google Classroom - Dashboard</title>
+    <title>Faculty Control Panel - eduSphere</title>
     <style>
-        :root { --primary-blue: #1a73e8; --border-grey: #dadce0; --text-dark: #3c4043; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', Arial, sans-serif; }
-        body { background: #ffffff; color: var(--text-dark); padding: 24px; }
-        .nav-container { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; border: 1px solid var(--border-grey); padding: 16px 32px; border-radius: 8px; margin-bottom: 32px; }
-        .join-box input { padding: 10px; border: 1px solid var(--border-grey); border-radius: 4px; width: 220px; font-size: 14px; margin-right: 8px; }
-        .btn { background: var(--primary-blue); color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: 500; cursor: pointer; text-decoration: none; font-size: 14px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .card { border: 1px solid var(--border-grey); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
-        .card-header { background: #1e8e3e; color: white; padding: 24px; min-height: 110px; position: relative; }
-        .card-title { font-size: 22px; font-weight: 400; margin-bottom: 6px; }
-        .code-pill { background: rgba(255, 255, 255, 0.2); padding: 3px 8px; border-radius: 4px; font-size: 12px; font-family: monospace; letter-spacing: 1px; }
-        .card-body { padding: 24px; flex-grow: 1; font-size: 14px; color: #5f6368; line-height: 1.5; }
-        .card-footer { padding: 12px 24px; border-top: 1px solid var(--border-grey); background: #f8f9fa; display: flex; justify-content: flex-end; }
-        .view-btn { color: var(--primary-blue); text-decoration: none; font-weight: 500; font-size: 14px; }
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-main: #1d1d1f;
+            --text-muted: #515154;
+            --accent-blue: #0066cc;
+            --border-light: #e5e5e7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            padding: 40px 80px;
+        }
+
+        /* Top Header Styling */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 48px;
+        }
+
+        .brand-logo {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .brand-logo span {
+            color: var(--accent-blue);
+            font-weight: 400;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        /* Main Workspace Branding */
+        .hero-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+
+        .hero-title {
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        /* Buttons matching the clean design */
+        .btn-action {
+            background-color: #1c1c1e;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-action:hover {
+            background-color: #2c2c2e;
+        }
+
+        /* Course Layout Grid */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        /* Clean Studio Cards */
+        .course-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 180px;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .course-card:hover {
+            border-color: #d2d2d7;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .course-tag {
+            background: #1c1c1e;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .manage-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .manage-link:hover {
+            text-decoration: underline;
+        }
+
+        .course-name {
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1.25;
+            margin-bottom: 12px;
+        }
+
+        .student-count-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .status-banner {
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
 
 <%
-    // Fetch user details from the session variables setup during login
+    // Fetch details from session safely
     String userRole = (String) session.getAttribute("userRole");
     String loggedInUserId = (String) session.getAttribute("userId");
     
-    // Fallback if session happens to be empty during direct URL testing
-    if (loggedInUserId == null) {
-        loggedInUserId = "S76237"; 
-    }
+    List<Course> courses = (List<Course>) request.getAttribute("courses");
 %>
 
-<div class="nav-container">
-    <form action="${pageContext.request.contextPath}/course/enroll" method="POST" class="join-box">
-        <%-- FIXED: Changed hardcoded studentId to use the dynamic session value --%>
-        <input type="hidden" name="studentId" value="<%= loggedInUserId %>"> 
-        <input type="text" name="classCode" placeholder="Enter Class Code (e.g. ox7v2b)" required>
-        <button type="submit" class="btn" style="background:#1e8e3e;">Join Class</button>
-    </form>
+<div class="top-navbar">
+    <div class="brand-logo">● eduSphere <span>Faculty</span></div>
+    <div class="user-profile">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Professor: Hannah Delisha
+    </div>
+</div>
+
+<% if("created".equals(request.getParameter("success"))) { %>
+    <div class="status-banner" style="background: #e6f4ea; color: #137333;">🎉 New classroom node instantiated successfully!</div>
+<% } %>
+
+<div class="hero-section">
+    <div>
+        <h1 class="hero-title">Instructional Control Console</h1>
+        <p class="hero-subtitle">Manage assigned curriculum structures and evaluate student pipeline submissions.</p>
+    </div>
     
-    <%-- ROLE CONDITION CHECK: Only render the link button if the user is a lecturer --%>
+    <%-- Show 'Create' only if they are a lecturer --%>
     <% if ("lecturer".equalsIgnoreCase(userRole)) { %>
-        <a href="${pageContext.request.contextPath}/course/create" class="btn">+ Create Class</a>
+        <a href="${pageContext.request.contextPath}/course/create" class="btn-action">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create New Course
+        </a>
     <% } %>
 </div>
 
-<% if(request.getParameter("error") != null) { %>
-    <p style="color: #d93025; font-size: 14px; margin-bottom: 20px; font-weight:500;">⚠️ Code unrecognized. Verification failure.</p>
-<% } %>
-
-<div class="grid">
+<div class="course-grid">
     <% 
-        List<Course> list = (List<Course>) request.getAttribute("courses");
-        if (list != null && !list.isEmpty()) {
-            for (Course c : list) {
+        if (courses != null && !courses.isEmpty()) {
+            for (Course course : courses) {
     %>
-            <div class="card">
-                <div class="card-header">
-                    <div class="card-title"><%= c.getTitle() %></div>
-                    <span class="code-pill">Code: <%= c.getCourseCode() %></span>
+                <div class="course-card">
+                    <div>
+                        <div class="card-top">
+                            <span class="course-tag"><%= course.getCourseCode() %></span>
+                            
+                            <% if ("lecturer".equalsIgnoreCase(userRole)) { %>
+                                <a href="${pageContext.request.contextPath}/course/edit?id=<%= course.getCourseCode() %>" class="manage-link">
+                                    Manage Studio 
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                </a>
+                            <% } %>
+                        </div>
+                        
+                        <div class="course-name"><%= course.getTitle() %></div>
+                    </div>
+
+                    <div class="student-count-wrapper">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <a href="${pageContext.request.contextPath}/course/view?id=<%= course.getCourseCode() %>" style="color: var(--text-muted); text-decoration: none;">
+                            View Registered Students
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <%-- Added a null pointer safety check for descriptions --%>
-                    <p>
-                        <%= (c.getDescription() != null && c.getDescription().length() > 140) ? 
-                            c.getDescription().substring(0, 140) + "..." : c.getDescription() %>
-                    </p>
-                </div>
-                <div class="card-footer">
-                    <a href="${pageContext.request.contextPath}/course/view?id=<%= c.getCourseCode() %>" class="view-btn">Open Class Stream →</a>
-                </div>
-            </div>
     <% 
             }
         } else {
     %>
-        <p style="color: #5f6368;">No active classrooms found in your storage collection backend.</p>
+        <div style="grid-column: 1 / -1; padding: 60px; text-align: center; border: 1px dashed var(--border-light); border-radius: 16px;">
+            <p style="color: var(--text-muted); font-size: 15px;">No assigned curriculum structures found in your active storage profile.</p>
+        </div>
     <% } %>
 </div>
 
