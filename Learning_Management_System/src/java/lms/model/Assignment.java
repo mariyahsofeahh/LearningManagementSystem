@@ -8,63 +8,43 @@ package lms.model;
  *
  * @author ASUS
  */
+
 public class Assignment {
 
-    private int assignmentId;
-    private String courseId;
-    private String lecturerId;
+    private String id;
+    private String courseCode;
     private String title;
     private String description;
+    private String fileName;
+    private String filePath;
     private String deadline;
+    private String lecturerId;
 
-    public Assignment() {
-    }
+    public Assignment() {}
 
-    public int getAssignmentId() {
-        return assignmentId;
-    }
+    // getters & setters
 
-    public void setAssignmentId(int assignmentId) {
-        this.assignmentId = assignmentId;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public String getCourseId() {
-        return courseId;
-    }
+    public String getCourseCode() { return courseCode; }
+    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
 
-    public void setCourseId(String courseId) {
-        this.courseId = courseId;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getLecturerId() {
-        return lecturerId;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setLecturerId(String lecturerId) {
-        this.lecturerId = lecturerId;
-    }
+    public String getFileName() { return fileName; }
+    public void setFileName(String fileName) { this.fileName = fileName; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getDeadline() { return deadline; }
+    public void setDeadline(String deadline) { this.deadline = deadline; }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(String deadline) {
-        this.deadline = deadline;
-    }
+    public String getLecturerId() { return lecturerId; }
+    public void setLecturerId(String lecturerId) { this.lecturerId = lecturerId; }
 }

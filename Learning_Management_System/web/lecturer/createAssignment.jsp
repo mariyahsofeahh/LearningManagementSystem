@@ -4,104 +4,26 @@
     Author     : ASUS
 --%>
 
-<%@page contentType="text/html"%>
+<form action="${pageContext.request.contextPath}/assignment/create"
+      method="POST"
+      enctype="multipart/form-data">
 
-<!DOCTYPE html>
-<html>
+    <h2>Create Assignment</h2>
 
-    <head>
+    Course Code:
+    <input type="text" name="courseCode" required>
 
-        <title>Create Assignment</title>
+    Title:
+    <input type="text" name="title" required>
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-              rel="stylesheet">
+    Description:
+    <textarea name="description"></textarea>
 
-        <link rel="stylesheet"
-              href="${pageContext.request.contextPath}/css/style.css">
+    Deadline:
+    <input type="datetime-local" name="deadline" required>
 
-    </head>
+    Upload File:
+    <input type="file" name="file" required>
 
-    <body>
-
-        <div class="container mt-5">
-
-            <div class="card shadow">
-
-                <div class="card-body">
-
-                    <h2 class="page-title">
-                        Create Assignment
-                    </h2>
-
-                    <form action="${pageContext.request.contextPath}/assignment/create"
-                          method="post">
-
-                        <div class="mb-3">
-
-                            <label>Course ID</label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   name="courseId"
-                                   required>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label>Lecturer ID</label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   name="lecturerId"
-                                   required>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label>Title</label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   name="title">
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label>Description</label>
-
-                            <textarea class="form-control"
-                                      name="description">
-                            </textarea>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label>Deadline</label>
-
-                            <input type="datetime-local"
-                                   class="form-control"
-                                   name="deadline">
-
-                        </div>
-
-                        <button class="btn btn-primary">
-
-                            Create Assignment
-
-                        </button>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </body>
-
-</html>
+    <button type="submit">Create</button>
+</form>
