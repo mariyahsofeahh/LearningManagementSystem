@@ -148,7 +148,6 @@
             align-items: center;
             gap: 4px;
         }
-
         .manage-link:hover {
             text-decoration: underline;
         }
@@ -216,18 +215,11 @@
     List<Course> courses = (List<Course>) request.getAttribute("courses");
 %>
 
-<div class="top-navbar">
-    <div class="brand-logo">● eduSphere <span>Faculty</span></div>
-    <div class="user-profile">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        Professor: Hannah Delisha
-    </div>
-</div>
 
 <% if("created".equals(request.getParameter("success"))) { %>
     <div class="status-banner" style="background: #e6f4ea; color: #137333;">🎉 New classroom node instantiated successfully!</div>
 <% } else if("deleted".equals(request.getParameter("success"))) { %>
-    <div class="status-banner" style="background: #e6f4ea; color: #137333;">🗑️ Course curriculum removed successfully.</div>
+    <div class="status-banner" style="background: #e6f4ea; color: #137333;">🗑 Course curriculum removed successfully.</div>
 <% } %>
 
 <div class="hero-section">
@@ -244,7 +236,6 @@
         </a>
     <% } %>
 </div>
-
 <div class="course-grid">
     <% 
         if (courses != null && !courses.isEmpty()) {

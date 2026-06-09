@@ -34,15 +34,9 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg glass-nav sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-dark d-flex align-items-center" href="DashboardServlet">
-                <span class="bg-primary text-white p-2 rounded-3 me-2 d-inline-flex"><i class="bi bi-layers-half"></i></span>
-                <span>eduSphere</span>
-            </a>
-            <span class="navbar-text fw-medium text-dark"><i class="bi bi-mortarboard me-1"></i> Student: <%= session.getAttribute("userName") %></span>
-        </div>
-    </nav>
+
+    
+    <%@ include file="header-stud.jsp" %>
 
     <div class="container my-5">
     <% if(request.getParameter("success") != null && "enrolled".equals(request.getParameter("success"))) { %>
