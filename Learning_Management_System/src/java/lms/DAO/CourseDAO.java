@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCursor;
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
@@ -39,21 +40,18 @@ public class CourseDAO {
 
     // Retrieve courses managed by a specific lecturer
     public List<Course> getCoursesByLecturer(String lecturerId) {
-    List<Course> list = new ArrayList<>();
-    
-    // Query matching the specific lecturer ID pointer
-    try (MongoCursor<Document> cursor = courseCollection.find(eq("lecturer_id", lecturerId)).iterator()) {
-        while (cursor.hasNext()) {
-            Document doc = cursor.next();
-            
-            // 🌟 FIX: Use the unified mapping method to ensure ALL attributes (including courseCode) are populated
-            list.add(mapDocumentToCourse(doc));
+        List<Course> list = new ArrayList<>();
+        
+        try (MongoCursor<Document> cursor = courseCollection.find(eq("lecturer_id", lecturerId)).iterator()) {
+            while (cursor.hasNext()) {
+                Document doc = cursor.next();
+                list.add(mapDocumentToCourse(doc));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+        return list;
     }
-    return list;
-}
 
     // Fetch details of a single course using its code (e.g., CSE3433)
     public Course getCourseByCode(String courseCode) {
@@ -72,7 +70,10 @@ public class CourseDAO {
     public boolean createCourse(Course course) {
         try {
             Document doc = new Document()
-                    .append("course_code", course.getCourseCode().trim().toUpperCase()) // Store clean & uppercase
+                    // 🔑 Use a clear separate field for the unique join/class code token
+                    .append("class_code", course.getCourseCode().trim().toLowerCase()) 
+                    // 📚 Keep the structural academic curriculum code separate
+                    .append("course_code", "CSF3223") 
                     .append("title", course.getTitle().trim())
                     .append("description", course.getDescription().trim())
                     .append("lecturer_id", course.getLecturerId());
@@ -84,7 +85,6 @@ public class CourseDAO {
             return false;
         }
     }
-
     // Update an existing course details block
     public boolean updateCourse(Course course) {
         try {
@@ -116,6 +116,42 @@ public class CourseDAO {
 
             enrollmentCollection.insertOne(enrollment);
             return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 🌟 FIXED: Native MongoDB Course Deletion Logic
+    public boolean deleteCourseByCode(String courseCode) {
+        try {
+            // 1. Remove the course from the courses collection
+            long deletedCourses = courseCollection.deleteOne(eq("course_code", courseCode)).getDeletedCount();
+            
+            if (deletedCourses > 0) {
+                // 2. Cascading delete: Remove all student enrollment records tied to this course code
+                enrollmentCollection.deleteMany(eq("course_code", courseCode));
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    // 🌟 FIXED: Native MongoDB Student Unenrollment Logic
+    public boolean unenrollStudent(String studentId, String courseCode) {
+        try {
+            // Find and delete the record where both student_id AND course_code match
+            long deletedEnrollments = enrollmentCollection.deleteOne(
+                and(
+                    eq("student_id", studentId),
+                    eq("course_code", courseCode)
+                )
+            ).getDeletedCount();
+            
+            return deletedEnrollments > 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;

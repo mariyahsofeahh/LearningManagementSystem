@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 // Restored strictly back to javax packages
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+import javax.servlet.annotation.WebServlet; // 🔑 Added for processing direct container requests
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,39 +61,36 @@ public class CourseServlet extends HttpServlet {
     }
     
     private void registerNewCourse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Course course = new Course();
+        Course course = new Course();
 
-    // 🌟 IMPORTANT: Double check that your createCourse.jsp input field has name="courseCode"
-    String manualCode = request.getParameter("courseCode");
-    String title = request.getParameter("title");
-    String description = request.getParameter("description");
+        String manualCode = request.getParameter("courseCode");
+        String title = request.getParameter("title");
+        String description = request.getParameter("description");
 
-    // Simple validation block to make sure nothing is empty
-    if (manualCode == null || manualCode.trim().isEmpty() || title == null || title.trim().isEmpty()) {
-        response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=missingfields");
-        return;
-    }
+        if (manualCode == null || manualCode.trim().isEmpty() || title == null || title.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=missingfields");
+            return;
+        }
 
-    course.setCourseCode(manualCode);
-    course.setTitle(title);
-    course.setDescription(description);
+        course.setCourseCode(manualCode);
+        course.setTitle(title);
+        course.setDescription(description);
 
-    // Pull secure creator ID from session
-    HttpSession session = request.getSession(false);
-    String sessionUid = (session != null) ? (String) session.getAttribute("userId") : null;
+        HttpSession session = request.getSession(false);
+        String sessionUid = (session != null) ? (String) session.getAttribute("userId") : null;
     
-    if (sessionUid == null) {
-        response.sendRedirect(request.getContextPath() + "/login.jsp");
-        return;
-    }
-    course.setLecturerId(sessionUid);
+        if (sessionUid == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+        course.setLecturerId(sessionUid);
 
-    if (repository.createCourse(course)) {
-        response.sendRedirect(request.getContextPath() + "/course/catalog?success=created");
-    } else {
-        response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=true");
+        if (repository.createCourse(course)) {
+            response.sendRedirect(request.getContextPath() + "/course/catalog?success=created");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=true");
+        }
     }
-}
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -101,7 +98,7 @@ public class CourseServlet extends HttpServlet {
 
         String path = request.getPathInfo();
         if (path == null) {
-            response.sendRedirect(request.getContextPath() + "/course/catalog");
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
             return;
         }
 
@@ -115,8 +112,14 @@ public class CourseServlet extends HttpServlet {
             case "/update":
                 updateCourseDetails(request, response);
                 break;
+            case "/delete":
+                removeCourseCompletely(request, response);
+                break;
+            case "/unenroll":
+                studentDropCourse(request, response);
+                break;
             default:
-                response.sendRedirect(request.getContextPath() + "/course/catalog");
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
 
@@ -128,9 +131,9 @@ public class CourseServlet extends HttpServlet {
         session.setAttribute("userRole", "student");
 
         if (repository.enrollStudentByCode(studentId, code)) {
-            response.sendRedirect(request.getContextPath() + "/course/catalog?success=enrolled");
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?success=enrolled");
         } else {
-            response.sendRedirect(request.getContextPath() + "/course/catalog?error=invalidcode");
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=invalidcode");
         }
     }
 
@@ -139,11 +142,52 @@ public class CourseServlet extends HttpServlet {
         course.setCourseCode(request.getParameter("classCode"));
         course.setTitle(request.getParameter("title"));
         course.setDescription(request.getParameter("description"));
-
+        
         if (repository.updateCourse(course)) {
-            response.sendRedirect(request.getContextPath() + "/course/catalog?success=updated");
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?success=updated");
         } else {
-            response.sendRedirect(request.getContextPath() + "/course/catalog?error=updatefailed");
+            response.sendRedirect(request.getContextPath() + "/course/edit?id=" + course.getCourseCode() + "&error=updatefailed");
+        }
+    }
+    
+    private void removeCourseCompletely(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        String userRole = (session != null) ? (String) session.getAttribute("userRole") : null;
+    
+        // Security check: Only lecturers should be allowed to delete entire courses
+        if (!"lecturer".equalsIgnoreCase(userRole)) {
+            // ✅ UPDATED: Redirect to DashboardServlet instead of /course/catalog
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=unauthorized");
+            return;
+        }
+
+        // Matches the name="courseCode" from your JSP form hidden input element!
+        String courseCode = request.getParameter("courseCode"); 
+        if (courseCode != null && !courseCode.trim().isEmpty()) {
+            if (repository.deleteCourseByCode(courseCode)) {
+                // ✅ UPDATED: Redirect cleanly back to your main DashboardServlet with the success flag
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?success=deleted");
+                return;
+            }
+        }
+        // ✅ UPDATED: Redirect to DashboardServlet instead of /course/catalog
+        response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=deletefailed");
+    }
+    
+    private void studentDropCourse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        String studentId = (session != null) ? (String) session.getAttribute("userId") : null;
+        String courseCode = request.getParameter("classCode");
+
+        if (studentId == null || courseCode == null) {
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=missingdata");
+            return;
+        }
+
+        if (repository.unenrollStudent(studentId, courseCode)) {
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?success=dropped");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=dropfailed");
         }
     }
 }
