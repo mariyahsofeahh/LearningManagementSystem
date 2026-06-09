@@ -1,106 +1,121 @@
 <%-- 
     Document   : assignmentLIst
-    Created on : 4 Jun 2026, 9:25:02 am
+    Created on : 4 Jun 2026, 9:25:02?am
     Author     : ASUS
 --%>
 
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="java.util.List"%>
-<%@page import="model.Assignment"%>
+<<%@page import="java.util.List"%>
+<%@page import="lms.model.Assignment"%>
 
 <!DOCTYPE html>
 <html>
     <head>
 
-        <title>Assignments</title>
+        <title>Assignment List</title>
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-              rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+        <style>
+
+            body{
+                font-family:'Inter',sans-serif;
+
+                background: linear-gradient(
+                    -45deg,
+                    #fcefe9,
+                    #fbf0f5,
+                    #eef2f3,
+                    #e3f2fd
+                    );
+
+                background-size:400% 400%;
+                animation:fluidGradient 15s ease infinite;
+            }
+
+            @keyframes fluidGradient{
+                0%{
+                    background-position:0% 50%;
+                }
+                50%{
+                    background-position:100% 50%;
+                }
+                100%{
+                    background-position:0% 50%;
+                }
+            }
+
+            .container-card{
+
+                margin-top:50px;
+
+                background:rgba(255,255,255,0.8);
+
+                backdrop-filter:blur(20px);
+
+                border-radius:24px;
+
+                padding:30px;
+            }
+
+        </style>
 
     </head>
 
-    <body class="bg-light">
+    <body>
 
-        <div class="container mt-5">
+        <div class="container">
 
-            <!-- Page Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="container-card">
 
-                <h2>Assignments</h2>
+                <h2 class="mb-4">
+                    My Assignments
+                </h2>
 
-                <a href="${pageContext.request.contextPath}/assignment"
-                   class="btn btn-primary">
-                    + Create Assignment
-                </a>
+                <table class="table table-hover">
 
-            </div>
+                    <thead>
 
-            <%
-                List<Assignment> assignments
-                        = (List<Assignment>) request.getAttribute("assignments");
-            %>
+                        <tr>
+                            <th>Course Code</th>
+                            <th>Title</th>
+                            <th>Deadline</th>
+                        </tr>
 
-            <% if (assignments == null || assignments.isEmpty()) { %>
+                    </thead>
 
-            <div class="alert alert-info">
-                No assignments available.
-            </div>
+                    <tbody>
 
-            <% } else { %>
+                        <%
 
-            <div class="row">
+                            List<Assignment> assignments
+                                    = (List<Assignment>) request.getAttribute("assignments");
 
-                <% for (Assignment a : assignments) {%>
+                            if (assignments != null) {
 
-                <div class="col-md-6 mb-4">
+                                for (Assignment a : assignments) {
 
-                    <div class="card shadow-sm">
+                        %>
 
-                        <div class="card-body">
+                        <tr>
 
-                            <h5 class="card-title">
-                                <%= a.getTitle()%>
-                            </h5>
+                            <td><%= a.getCourseCode()%></td>
 
-                            <p class="card-text">
-                                <%= a.getDescription()%>
-                            </p>
+                            <td><%= a.getTitle()%></td>
 
-                            <p class="text-muted">
-                                Deadline:
-                                <%= a.getDeadline()%>
-                            </p>
+                            <td><%= a.getDeadline()%></td>
 
-                            <div class="d-flex gap-2">
+                        </tr>
 
-                                <a href="#"
-                                   class="btn btn-outline-primary btn-sm">
-                                    View
-                                </a>
+                        <%
+                                }
+                            }
+                        %>
 
-                                <a href="#"
-                                   class="btn btn-outline-success btn-sm">
-                                    Submissions
-                                </a>
+                    </tbody>
 
-                                <a href="#"
-                                   class="btn btn-outline-danger btn-sm">
-                                    Delete
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <% } %>
+                </table>
 
             </div>
-
-            <% }%>
 
         </div>
 

@@ -23,22 +23,27 @@ public class AssignmentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String path = request.getPathInfo();
+
+        if (path == null) {
+            path = "/createPage";
+        }
+
         HttpSession session = request.getSession(false);
-        
+
         if (session == null || session.getAttribute("userId") == null) {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
-        
+
         String userId = (String) session.getAttribute("userId");
         String userRole = (String) session.getAttribute("userRole");
 
         if (path.equals("/createPage")) {
             // Direct request path navigation straight to assignment page builder
             request.getRequestDispatcher("/assignment/createAssignment.jsp").forward(request, response);
-            
+
         } else if (path.equals("/view")) {
             String assignmentId = request.getParameter("id");
             Assignment task = assignmentDAO.getAssignmentById(assignmentId);
@@ -61,7 +66,7 @@ public class AssignmentServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String path = request.getPathInfo();
         HttpSession session = request.getSession(false);
         String userId = (String) session.getAttribute("userId");
@@ -84,7 +89,7 @@ public class AssignmentServlet extends HttpServlet {
         } else if (path.equals("/submit")) {
             String assignmentId = request.getParameter("assignmentId");
             String courseCode = request.getParameter("courseCode");
-            
+
             // Mock S3 CDN reference bucket link output for simulation
             String mockUrl = "https://lms-bucket.s3.amazonaws.com/submissions/" + userId + "_" + assignmentId + ".pdf";
 

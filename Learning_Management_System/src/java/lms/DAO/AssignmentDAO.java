@@ -9,6 +9,8 @@ import java.util.List;
 import lms.db.MongoConnection;
 import lms.model.Assignment;
 import org.bson.Document;
+import org.bson.types.ObjectId;
+
 
 public class AssignmentDAO {
 
@@ -46,20 +48,87 @@ public class AssignmentDAO {
                 .into(new ArrayList<>());
     }
 
+    // Retrieve assignments created by a lecturer
     public List<Assignment> getAssignmentsByLecturer(String lecturerId) {
+
         List<Assignment> list = new ArrayList<>();
 
-        FindIterable<Document> docs = collection.find(eq("user_id", lecturerId));
+        try {
 
-        for (Document d : docs) {
-            Assignment a = new Assignment();
-            a.setId(d.getObjectId("_id").toString());
-            a.setTitle(d.getString("title"));
-            a.setLecturerId(d.getString("user_id")); // because same field
-            list.add(a);
+            // Find all assignments that belong to this lecturer
+            FindIterable<Document> docs
+                    = collection.find(eq("lecturer_id", lecturerId));
+
+            for (Document doc : docs) {
+
+                Assignment assignment = new Assignment();
+
+                // MongoDB generated ID
+                assignment.setId(doc.getObjectId("_id").toString());
+
+                // Assignment information
+                assignment.setCourseCode(doc.getString("course_code"));
+                assignment.setTitle(doc.getString("title"));
+                assignment.setDescription(doc.getString("description"));
+                assignment.setDeadline(doc.getString("deadline"));
+
+                // Lecturer who created the assignment
+                assignment.setLecturerId(
+                        doc.getString("lecturer_id"));
+
+                list.add(assignment);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return list;
-
     }
+
+    public Assignment getAssignmentById(String assignmentId) {
+
+        try {
+
+            Document doc
+                    = collection.find(
+                            eq("_id",
+                                    new ObjectId(assignmentId)))
+                            .first();
+
+            if (doc != null) {
+
+                Assignment assignment
+                        = new Assignment();
+
+                assignment.setId(
+                        doc.getObjectId("_id")
+                                .toString());
+
+                assignment.setCourseCode(
+                        doc.getString("course_code"));
+
+                assignment.setTitle(
+                        doc.getString("title"));
+
+                assignment.setDescription(
+                        doc.getString("description"));
+
+                assignment.setDeadline(
+                        doc.getString("deadline"));
+
+                assignment.setLecturerId(
+                        doc.getString("lecturer_id"));
+
+                return assignment;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+   
 }
