@@ -48,7 +48,7 @@
                         <hr>
 
                         <form action="${pageContext.request.contextPath}/assignment/grade" method="POST">
-                            <input type="hidden" name="submissionId" value="<%= sub.getId()%>">
+                            <input type="hidden" name="submissionId" value="<%= sub.getSubmissionId()%>">
                             <input type="hidden" name="courseCode" value="<%= task.getCourseCode()%>">
 
                             <div class="mb-3">

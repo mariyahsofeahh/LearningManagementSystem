@@ -4,7 +4,7 @@
     Author     : ASUS
 --%>
 
-<<%@page import="java.util.List"%>
+<%@page import="java.util.List"%>
 <%@page import="lms.model.Assignment"%>
 
 <!DOCTYPE html>

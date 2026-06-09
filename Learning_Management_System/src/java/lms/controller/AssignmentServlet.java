@@ -46,7 +46,12 @@ public class AssignmentServlet extends HttpServlet {
                 return;
             }
 
-            request.setAttribute("courseCode", request.getParameter("courseCode"));
+            String courseCode = request.getParameter("courseCode");
+            if (courseCode == null || courseCode.trim().isEmpty()) {
+                courseCode = request.getParameter("courseId");
+            }
+
+            request.setAttribute("courseCode", courseCode);
             request.getRequestDispatcher("/lecturer/createAssignment.jsp").forward(request, response);
 
         } else if (path.equals("/list")) {
@@ -62,8 +67,6 @@ public class AssignmentServlet extends HttpServlet {
             request.setAttribute("assignments", assignments);
             request.setAttribute("courseCode", courseCode);
             request.getRequestDispatcher("/lecturer/assignmentList.jsp").forward(request, response);
-            // Direct request path navigation straight to assignment page builder
-            request.getRequestDispatcher("/lecturer/createAssignment.jsp").forward(request, response);
 
         } else if (path.equals("/view")) {
             String assignmentId = request.getParameter("id");
@@ -86,7 +89,6 @@ public class AssignmentServlet extends HttpServlet {
                 Submission studentRecord = submissionDAO.getStudentSubmission(assignmentId, userId);
                 request.setAttribute("submission", studentRecord);
                 request.getRequestDispatcher("/student/assignmentView.jsp").forward(request, response);
-                request.getRequestDispatcher("/student/studentView.jsp").forward(request, response);
             }
         } else {
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
@@ -137,6 +139,12 @@ public class AssignmentServlet extends HttpServlet {
             String assignmentId = request.getParameter("assignmentId");
             String courseCode = request.getParameter("courseCode");
 
+            if (assignmentId == null || assignmentId.trim().isEmpty()
+                    || courseCode == null || courseCode.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=missingassignment");
+                return;
+            }
+
             String fileUrl = request.getParameter("studentFileUrl");
             if (fileUrl == null || fileUrl.trim().isEmpty()) {
                 fileUrl = "https://lms-bucket.s3.amazonaws.com/submissions/" + userId + "_" + assignmentId + ".pdf";
@@ -164,11 +172,19 @@ public class AssignmentServlet extends HttpServlet {
             String grade = request.getParameter("grade");
             String feedback = request.getParameter("feedback");
 
+            if (subId == null || subId.trim().isEmpty()
+                    || courseCode == null || courseCode.trim().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=missingsubmission");
+                return;
+            }
+
             if (submissionDAO.gradeSubmission(subId, grade, feedback)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&success=graded");
             } else {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&error=failed");
             }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
 }

@@ -168,13 +168,14 @@ public class DashboardServlet extends HttpServlet {
 
         // Item 3: Pull Task (Assignment) Records mapped precisely to this Course
         List<Map<String, String>> tasks = new ArrayList<>();
-        MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_id", classCode)).iterator();
+        MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_code", classCode)).iterator();
         try {
             while (taskCursor.hasNext()) {
                 Document doc = taskCursor.next();
                 Map<String, String> taskItem = new HashMap<>();
                 taskItem.put("id", doc.getObjectId("_id").toString());
                 taskItem.put("title", doc.getString("title"));
+                taskItem.put("description", doc.getString("description"));
                 taskItem.put("dueDate", doc.getString("deadline"));
                 tasks.add(taskItem);
             }
