@@ -59,22 +59,27 @@
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
                 <% if (lecturerCourseId != null && !lecturerCourseId.isEmpty()) { %>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-lect" href="LecturerDashboardServlet">
+                        <a class="nav-link nav-link-lect" href="${pageContext.request.contextPath}/DashboardServlet">Dashboard">
                             <i class="bi bi-arrow-left-short"></i> All Courses
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-lect <%= lectActivePage.equals("materials") ? "active" : "" %>" href="LearningMaterialServlet?courseId=<%= lecturerCourseId %>">
+                        <a class="nav-link nav-link-lect <%= lectActivePage.equals("materials") ? "active" : "" %>" href="${pageContext.request.contextPath}/DashboardServlet?courseId=<%= lecturerCourseId %>">Materials %>">
                             <i class="bi bi-folder2-open me-1"></i> Materials
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-lect <%= lectActivePage.equals("tasks") ? "active" : "" %>" href="TaskManagementServlet?courseId=<%= lecturerCourseId %>">
+                        <a class="nav-link nav-link-lect <%= lectActivePage.equals("tasks") ? "active" : "" %>" href="${pageContext.request.contextPath}/assignment/createPage?courseId=<%= lecturerCourseId %>">Tasks %>">
                             <i class="bi bi-journal-text me-1"></i> Tasks
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-lect <%= lectActivePage.equals("people") ? "active" : "" %>" href="RosterServlet?courseId=<%= lecturerCourseId %>">
+                            <i class="bi bi-people me-1"></i> People
+                        </a>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link nav-link-lect <%= lectActivePage.equals("logout") ? "active" : "" %>" href="RosterServlet?courseId=<%= lecturerCourseId %>">
                             <i class="bi bi-people me-1"></i> People
                         </a>
                     </li>
@@ -98,9 +103,7 @@
                     <i class="bi bi-person-badge-fill text-success me-2"></i>
                     Lecturer: <%= session.getAttribute("userName") != null ? session.getAttribute("userName") : "Professor" %>
                 </span>
-                <a href="LogoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                    <i class="bi bi-box-arrow-right"></i>
-                </a>
+                    <a href="${pageContext.request.contextPath}/logoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3"></a>
             </div>
         </div>
     </div>

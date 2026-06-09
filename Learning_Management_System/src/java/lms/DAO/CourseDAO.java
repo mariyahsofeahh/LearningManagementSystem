@@ -71,9 +71,7 @@ public class CourseDAO {
         try {
             Document doc = new Document()
                     // 🔑 Use a clear separate field for the unique join/class code token
-                    .append("class_code", course.getCourseCode().trim().toLowerCase()) 
-                    // 📚 Keep the structural academic curriculum code separate
-                    .append("course_code", "CSF3223") 
+                   .append("course_code", course.getCourseCode().trim()) 
                     .append("title", course.getTitle().trim())
                     .append("description", course.getDescription().trim())
                     .append("lecturer_id", course.getLecturerId());

@@ -42,7 +42,7 @@ public class AssignmentServlet extends HttpServlet {
 
         if (path.equals("/createPage")) {
             // Direct request path navigation straight to assignment page builder
-            request.getRequestDispatcher("/assignment/createAssignment.jsp").forward(request, response);
+            request.getRequestDispatcher("/lecturer/createAssignment.jsp").forward(request, response);
 
         } else if (path.equals("/view")) {
             String assignmentId = request.getParameter("id");
@@ -53,12 +53,12 @@ public class AssignmentServlet extends HttpServlet {
                 // Fetch all submitted files across students for evaluation routing
                 List<Submission> submissionsList = submissionDAO.getSubmissionsByAssignment(assignmentId);
                 request.setAttribute("submissions", submissionsList);
-                request.getRequestDispatcher("/assignment/lecturerReview.jsp").forward(request, response);
+                request.getRequestDispatcher("/lecturer/lecturerReview.jsp").forward(request, response);
             } else {
                 // Fetch specific individual response data record matching logging student signature
                 Submission studentRecord = submissionDAO.getStudentSubmission(assignmentId, userId);
                 request.setAttribute("submission", studentRecord);
-                request.getRequestDispatcher("/assignment/studentView.jsp").forward(request, response);
+                request.getRequestDispatcher("/student/studentView.jsp").forward(request, response);
             }
         }
     }
