@@ -62,6 +62,8 @@ public class AssignmentServlet extends HttpServlet {
             request.setAttribute("assignments", assignments);
             request.setAttribute("courseCode", courseCode);
             request.getRequestDispatcher("/lecturer/assignmentList.jsp").forward(request, response);
+            // Direct request path navigation straight to assignment page builder
+            request.getRequestDispatcher("/lecturer/createAssignment.jsp").forward(request, response);
 
         } else if (path.equals("/view")) {
             String assignmentId = request.getParameter("id");
@@ -84,6 +86,7 @@ public class AssignmentServlet extends HttpServlet {
                 Submission studentRecord = submissionDAO.getStudentSubmission(assignmentId, userId);
                 request.setAttribute("submission", studentRecord);
                 request.getRequestDispatcher("/student/assignmentView.jsp").forward(request, response);
+                request.getRequestDispatcher("/student/studentView.jsp").forward(request, response);
             }
         } else {
             response.sendRedirect(request.getContextPath() + "/DashboardServlet");
