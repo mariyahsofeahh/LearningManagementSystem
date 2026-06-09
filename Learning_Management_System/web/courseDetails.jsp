@@ -1,12 +1,13 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
-<% 
-    // MODIFIED: Pulling requested string values out of the Map pipeline from DashboardServlet
-    String courseTitle = (String) request.getAttribute("selectedCourseName"); 
-    String courseCode  = (String) request.getAttribute("selectedCourseCode"); 
-    String courseId    = (String) request.getAttribute("selectedCourseId"); 
+<%
+    String courseTitle = (String) request.getAttribute("selectedCourseName");
+    String courseCode = (String) request.getAttribute("selectedCourseCode");
     String description = (String) request.getAttribute("selectedCourseDesc");
-    String lecturerId  = (String) request.getAttribute("selectedLecturerId");
+    String lecturerId = (String) request.getAttribute("selectedLecturerId");
+    String userRole = (String) session.getAttribute("userRole");
+    List<Map<String, String>> tasks = (List<Map<String, String>>) request.getAttribute("tasks");
+    List<Map<String, String>> materials = (List<Map<String, String>>) request.getAttribute("materials");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,15 +32,18 @@
         .stream-layout { display: grid; grid-template-columns: 200px 1fr; gap: 24px; }
         .announcement-box { border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 16px; background: white; }
         .sidebar-box { border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; font-size: 14px; }
-        .edit-link { display: inline-block; margin-top: 12px; color: white; text-decoration: underline; font-size: 14px; }
+        .btn-primary-link { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-weight: 500; }
+        .task-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 18px; margin-top: 14px; background: #fff; }
+        .task-meta { color: var(--text-sub); font-size: 13px; margin-top: 8px; line-height: 1.5; }
+        .empty-box { margin-top: 20px; border: 2px dashed var(--border-color); padding: 20px; text-align: center; color: var(--text-sub); border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <div class="navbar">
     <div class="nav-top">
-        <a href="${pageContext.request.contextPath}/DashboardServlet" class="back-btn">← Classes</a>
-        <div style="font-size: 12px; background: #e8f0fe; color: var(--primary); padding: 4px 8px; border-radius: 12px;">Active Session Workspace</div>
+        <a href="${pageContext.request.contextPath}/DashboardServlet" class="back-btn">Back to Classes</a>
+        <div style="font-size: 12px; background: #e8f0fe; color: var(--primary); padding: 4px 8px; border-radius: 12px;">Active Course Workspace</div>
     </div>
     <div class="tabs-container">
         <div class="tab active" onclick="switchTab('stream', this)">Stream</div>
@@ -52,46 +56,49 @@
     <div class="course-banner">
         <h1 class="banner-title"><%= courseTitle %></h1>
         <div>Class Code: <%= courseCode %></div>
-        <% if ("lecturer".equalsIgnoreCase((String)session.getAttribute("userRole"))) { %>
-            <a href="${pageContext.request.contextPath}/course/edit?id=<%= courseCode %>" style="color: white; text-decoration: underline;">
-    Edit Settings Schema
-</a>
-</a>
+        <% if ("lecturer".equalsIgnoreCase(userRole)) { %>
+            <a href="${pageContext.request.contextPath}/course/edit?id=<%= courseCode %>" style="color: white; text-decoration: underline; display:inline-block; margin-top:12px;">
+                Edit Course
+            </a>
         <% } %>
     </div>
+
     <div class="stream-layout">
         <div class="sidebar-box">
             <h4>Upcoming Tasks</h4>
             <div style="margin-top: 8px; font-size: 13px;">
-                <% 
-                    List<Map<String, String>> tasks = (List<Map<String, String>>) request.getAttribute("tasks");
-                    if(tasks != null && !tasks.isEmpty()){
-                        for(Map<String, String> t : tasks){
+                <%
+                    if (tasks != null && !tasks.isEmpty()) {
+                        for (Map<String, String> t : tasks) {
                 %>
-                    <p style="margin-bottom: 6px;">📝 <b><%= t.get("title") %></b> <br><span class="text-muted">Due: <%= t.get("dueDate") %></span></p>
-                <%      }
-                    } else { %>
-                    <p style="color: var(--text-sub);">No assignments due soon!</p>
+                    <p style="margin-bottom: 6px;"><b><%= t.get("title") %></b><br><span style="color:var(--text-sub);">Due: <%= t.get("dueDate") %></span></p>
+                <%
+                        }
+                    } else {
+                %>
+                    <p style="color: var(--text-sub);">No assignments due soon.</p>
                 <% } %>
             </div>
         </div>
+
         <div>
             <div class="announcement-box">
-                <h3 style="margin-bottom:10px;">Syllabus Layout Overview</h3>
+                <h3 style="margin-bottom:10px;">Course Overview</h3>
                 <p style="color: var(--text-sub); font-size: 14px; line-height: 1.6;"><%= description %></p>
             </div>
-            
+
             <div class="announcement-box">
-                <h3 style="margin-bottom:10px;">Shared Class Materials Vault</h3>
-                <% 
-                    List<Map<String, String>> materials = (List<Map<String, String>>) request.getAttribute("materials");
-                    if(materials != null && !materials.isEmpty()){
-                        for(Map<String, String> m : materials){
+                <h3 style="margin-bottom:10px;">Learning Materials</h3>
+                <%
+                    if (materials != null && !materials.isEmpty()) {
+                        for (Map<String, String> m : materials) {
                 %>
-                    <p style="padding: 6px 0; font-size:14px;">📁 <a href="#" style="color: var(--primary); text-decoration: none;"><%= m.get("fileName") %></a> (<%= m.get("fileType") %>)</p>
-                <%      }
-                    } else { %>
-                    <p style="color: var(--text-sub); font-size:14px;">No files posted to stream workspace yet.</p>
+                    <p style="padding: 6px 0; font-size:14px;"><a href="#" style="color: var(--primary); text-decoration: none;"><%= m.get("fileName") %></a> (<%= m.get("fileType") %>)</p>
+                <%
+                        }
+                    } else {
+                %>
+                    <p style="color: var(--text-sub); font-size:14px;">No files posted yet.</p>
                 <% } %>
             </div>
         </div>
@@ -100,14 +107,41 @@
 
 <div id="tab-classwork" class="workspace">
     <div class="announcement-box">
-        <h2>Classwork Hub (Integration Ready)</h2>
-        <div style="margin-top: 20px; border: 2px dashed var(--border-color); padding: 20px; text-align: center; color: var(--text-sub);">
-            <p><b>Partner 1 Module (Izani - Assignment Management)</b></p>
-            <a href="${pageContext.request.contextPath}/assignment/list" style="color:var(--primary); font-size:14px;">Go to Assignment Management Subsystem →</a>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom: 12px;">
+            <h2>Assignments</h2>
+            <% if ("lecturer".equalsIgnoreCase(userRole)) { %>
+                <a class="btn-primary-link" href="${pageContext.request.contextPath}/assignment/createPage?courseCode=<%= courseCode %>">Create Assignment</a>
+            <% } %>
         </div>
-        <div style="margin-top: 20px; border: 2px dashed var(--border-color); padding: 20px; text-align: center; color: var(--text-sub);">
-            <p><b>Partner 2 Module (Adlynn - Learning Materials)</b></p>
-            <a href="${pageContext.request.contextPath}/LearningMaterialServlet" style="color:var(--primary); font-size:14px;">Go to Material Management Storage Vault →</a>
+
+        <%
+            if (tasks != null && !tasks.isEmpty()) {
+                for (Map<String, String> t : tasks) {
+        %>
+            <div class="task-card">
+                <div style="display:flex; justify-content:space-between; gap:16px; align-items:flex-start;">
+                    <div>
+                        <h3 style="font-size:18px; margin-bottom:6px;"><%= t.get("title") %></h3>
+                        <p class="task-meta"><%= t.get("description") != null ? t.get("description") : "" %></p>
+                        <p class="task-meta">Due: <b><%= t.get("dueDate") %></b></p>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/assignment/view?id=<%= t.get("id") %>" style="color:var(--primary); font-size:14px; white-space:nowrap;">
+                        <%= "lecturer".equalsIgnoreCase(userRole) ? "View submissions" : "Open assignment" %>
+                    </a>
+                </div>
+            </div>
+        <%
+                }
+            } else {
+        %>
+            <div class="empty-box">No assignments posted for this course yet.</div>
+        <% } %>
+    </div>
+
+    <div class="announcement-box">
+        <h2>Materials</h2>
+        <div class="empty-box">
+            <a href="${pageContext.request.contextPath}/LearningMaterialServlet" style="color:var(--primary); font-size:14px;">Go to Material Management Storage Vault</a>
         </div>
     </div>
 </div>

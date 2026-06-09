@@ -41,25 +41,52 @@ public class AssignmentServlet extends HttpServlet {
         String userRole = (String) session.getAttribute("userRole");
 
         if (path.equals("/createPage")) {
-            // Direct request path navigation straight to assignment page builder
-            request.getRequestDispatcher("/assignment/createAssignment.jsp").forward(request, response);
+            if (!"lecturer".equalsIgnoreCase(userRole)) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=unauthorized");
+                return;
+            }
+
+            request.setAttribute("courseCode", request.getParameter("courseCode"));
+            request.getRequestDispatcher("/lecturer/createAssignment.jsp").forward(request, response);
+
+        } else if (path.equals("/list")) {
+            String courseCode = request.getParameter("courseCode");
+            List<Assignment> assignments;
+
+            if (courseCode != null && !courseCode.trim().isEmpty()) {
+                assignments = assignmentDAO.getAssignmentsByCourse(courseCode);
+            } else {
+                assignments = assignmentDAO.getAssignmentsByLecturer(userId);
+            }
+
+            request.setAttribute("assignments", assignments);
+            request.setAttribute("courseCode", courseCode);
+            request.getRequestDispatcher("/lecturer/assignmentList.jsp").forward(request, response);
 
         } else if (path.equals("/view")) {
             String assignmentId = request.getParameter("id");
             Assignment task = assignmentDAO.getAssignmentById(assignmentId);
+
+            if (task == null) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=assignmentnotfound");
+                return;
+            }
+
             request.setAttribute("assignment", task);
 
             if ("lecturer".equalsIgnoreCase(userRole)) {
                 // Fetch all submitted files across students for evaluation routing
                 List<Submission> submissionsList = submissionDAO.getSubmissionsByAssignment(assignmentId);
                 request.setAttribute("submissions", submissionsList);
-                request.getRequestDispatcher("/assignment/lecturerReview.jsp").forward(request, response);
+                request.getRequestDispatcher("/lecturer/lecturerReview.jsp").forward(request, response);
             } else {
                 // Fetch specific individual response data record matching logging student signature
                 Submission studentRecord = submissionDAO.getStudentSubmission(assignmentId, userId);
                 request.setAttribute("submission", studentRecord);
-                request.getRequestDispatcher("/assignment/studentView.jsp").forward(request, response);
+                request.getRequestDispatcher("/student/assignmentView.jsp").forward(request, response);
             }
+        } else {
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
 
@@ -69,9 +96,26 @@ public class AssignmentServlet extends HttpServlet {
 
         String path = request.getPathInfo();
         HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("userId") == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+
         String userId = (String) session.getAttribute("userId");
+        String userRole = (String) session.getAttribute("userRole");
+
+        if (path == null) {
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
+            return;
+        }
 
         if (path.equals("/create")) {
+            if (!"lecturer".equalsIgnoreCase(userRole)) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=unauthorized");
+                return;
+            }
+
             Assignment a = new Assignment();
             String courseCode = request.getParameter("courseCode");
             a.setCourseCode(courseCode);
@@ -90,13 +134,15 @@ public class AssignmentServlet extends HttpServlet {
             String assignmentId = request.getParameter("assignmentId");
             String courseCode = request.getParameter("courseCode");
 
-            // Mock S3 CDN reference bucket link output for simulation
-            String mockUrl = "https://lms-bucket.s3.amazonaws.com/submissions/" + userId + "_" + assignmentId + ".pdf";
+            String fileUrl = request.getParameter("studentFileUrl");
+            if (fileUrl == null || fileUrl.trim().isEmpty()) {
+                fileUrl = "https://lms-bucket.s3.amazonaws.com/submissions/" + userId + "_" + assignmentId + ".pdf";
+            }
 
             Submission s = new Submission();
             s.setAssignmentId(assignmentId);
             s.setStudentId(userId);
-            s.setStudentFileUrl(mockUrl);
+            s.setStudentFileUrl(fileUrl.trim());
 
             if (submissionDAO.submitWork(s)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&success=submitted");
@@ -105,6 +151,11 @@ public class AssignmentServlet extends HttpServlet {
             }
 
         } else if (path.equals("/grade")) {
+            if (!"lecturer".equalsIgnoreCase(userRole)) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=unauthorized");
+                return;
+            }
+
             String subId = request.getParameter("submissionId");
             String courseCode = request.getParameter("courseCode");
             String grade = request.getParameter("grade");

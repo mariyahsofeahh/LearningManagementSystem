@@ -43,6 +43,23 @@ public class AssignmentDAO {
     }
 
     // GET BY COURSE
+    public List<Assignment> getAssignmentsByCourse(String courseCode) {
+        List<Assignment> list = new ArrayList<>();
+
+        try {
+            FindIterable<Document> docs = collection.find(eq("course_code", courseCode));
+
+            for (Document doc : docs) {
+                list.add(mapDocumentToAssignment(doc));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    // Legacy helper kept for existing code that expects raw Mongo documents
     public List<Document> getByCourse(String courseCode) {
         return collection.find(eq("course_code", courseCode))
                 .into(new ArrayList<>());
@@ -61,22 +78,7 @@ public class AssignmentDAO {
 
             for (Document doc : docs) {
 
-                Assignment assignment = new Assignment();
-
-                // MongoDB generated ID
-                assignment.setId(doc.getObjectId("_id").toString());
-
-                // Assignment information
-                assignment.setCourseCode(doc.getString("course_code"));
-                assignment.setTitle(doc.getString("title"));
-                assignment.setDescription(doc.getString("description"));
-                assignment.setDeadline(doc.getString("deadline"));
-
-                // Lecturer who created the assignment
-                assignment.setLecturerId(
-                        doc.getString("lecturer_id"));
-
-                list.add(assignment);
+                list.add(mapDocumentToAssignment(doc));
             }
 
         } catch (Exception e) {
@@ -98,29 +100,7 @@ public class AssignmentDAO {
 
             if (doc != null) {
 
-                Assignment assignment
-                        = new Assignment();
-
-                assignment.setId(
-                        doc.getObjectId("_id")
-                                .toString());
-
-                assignment.setCourseCode(
-                        doc.getString("course_code"));
-
-                assignment.setTitle(
-                        doc.getString("title"));
-
-                assignment.setDescription(
-                        doc.getString("description"));
-
-                assignment.setDeadline(
-                        doc.getString("deadline"));
-
-                assignment.setLecturerId(
-                        doc.getString("lecturer_id"));
-
-                return assignment;
+                return mapDocumentToAssignment(doc);
             }
 
         } catch (Exception e) {
@@ -130,5 +110,18 @@ public class AssignmentDAO {
         return null;
     }
 
-   
+    private Assignment mapDocumentToAssignment(Document doc) {
+        Assignment assignment = new Assignment();
+
+        assignment.setId(doc.getObjectId("_id").toString());
+        assignment.setCourseCode(doc.getString("course_code"));
+        assignment.setTitle(doc.getString("title"));
+        assignment.setDescription(doc.getString("description"));
+        assignment.setFileName(doc.getString("file_name"));
+        assignment.setFilePath(doc.getString("file_path"));
+        assignment.setDeadline(doc.getString("deadline"));
+        assignment.setLecturerId(doc.getString("lecturer_id"));
+
+        return assignment;
+    }
 }
