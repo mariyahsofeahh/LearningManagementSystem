@@ -40,6 +40,25 @@ public class SubmissionDAO {
     public boolean submitWork(Submission submission) {
 
         try {
+            Document existingSubmission = collection.find(
+                    and(
+                            eq("assignment_id", submission.getAssignmentId()),
+                            eq("student_id", submission.getStudentId())
+                    ))
+                    .first();
+
+            if (existingSubmission != null) {
+                collection.updateOne(
+                        eq("_id", existingSubmission.getObjectId("_id")),
+                        combine(
+                                set("student_file_url", submission.getStudentFileUrl()),
+                                set("grade", "Pending"),
+                                set("feedback", "")
+                        )
+                );
+
+                return true;
+            }
 
             Document doc = new Document()
                     .append(
@@ -53,7 +72,7 @@ public class SubmissionDAO {
                             submission.getStudentFileUrl())
                     .append(
                             "grade",
-                            "")
+                            "Pending")
                     .append(
                             "feedback",
                             "");
