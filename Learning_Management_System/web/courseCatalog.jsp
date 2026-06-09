@@ -113,7 +113,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 180px;
+            min-height: 220px; /* Slight adjustment to comfortably fit the delete action footer */
             transition: box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
@@ -160,12 +160,41 @@
             margin-bottom: 12px;
         }
 
+        .card-footer-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border-light);
+        }
+
         .student-count-wrapper {
             display: flex;
             align-items: center;
             gap: 6px;
             font-size: 14px;
             color: var(--text-muted);
+        }
+
+        /* Minimal Trash Button styling matching the theme layout */
+        .btn-delete-inline {
+            background: none;
+            border: none;
+            color: #ff3b30;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-delete-inline:hover {
+            background: #ffe5e5;
         }
 
         .status-banner {
@@ -197,6 +226,8 @@
 
 <% if("created".equals(request.getParameter("success"))) { %>
     <div class="status-banner" style="background: #e6f4ea; color: #137333;">🎉 New classroom node instantiated successfully!</div>
+<% } else if("deleted".equals(request.getParameter("success"))) { %>
+    <div class="status-banner" style="background: #e6f4ea; color: #137333;">🗑️ Course curriculum removed successfully.</div>
 <% } %>
 
 <div class="hero-section">
@@ -235,11 +266,24 @@
                         <div class="course-name"><%= course.getTitle() %></div>
                     </div>
 
-                    <div class="student-count-wrapper">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        <a href="${pageContext.request.contextPath}/course/view?id=<%= course.getCourseCode() %>" style="color: var(--text-muted); text-decoration: none;">
-                            View Registered Students
-                        </a>
+                    <div class="card-footer-actions">
+                        <div class="student-count-wrapper">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <a href="${pageContext.request.contextPath}/course/view?id=<%= course.getCourseCode() %>" style="color: var(--text-muted); text-decoration: none;">
+                                View Registered Students
+                            </a>
+                        </div>
+
+                        <%-- 🔑 ATTACH THE DELETE ACTION FORM HERE FOR LECTURERS ONLY --%>
+                        <% if ("lecturer".equalsIgnoreCase(userRole)) { %>
+                            <form action="${pageContext.request.contextPath}/course/delete" method="POST" onsubmit="return confirm('Are you absolute sure you want to permanently delete this course?');" style="display: inline;">
+                                <input type="hidden" name="id" value="<%= course.getCourseCode() %>" />
+                                <button type="submit" class="btn-delete-inline">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    Delete
+                                </button>
+                            </form>
+                        <% } %>
                     </div>
                 </div>
     <% 

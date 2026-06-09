@@ -20,7 +20,6 @@ import static com.mongodb.client.model.Filters.eq;
 import lms.db.MongoConnection; 
 import org.bson.Document;
 
-
 public class DashboardServlet extends HttpServlet {
 
     @Override
@@ -47,44 +46,65 @@ public class DashboardServlet extends HttpServlet {
                 // Load core datasets matching this individual classroom layout code tracking indicator
                 loadCourseWorkspace(request, classCodeParam);
                 
-                // MODIFIED: Forward straight down to your functional course details view file
+                // Forward straight down to your functional course details view file
                 request.getRequestDispatcher("/courseDetails.jsp").forward(request, response);
                 return;
             }
 
             // =========================================================================
-            // SCENARIO B: Loading Central Dashboard Course List Matrix Maps
+            // SCENARIO B: Loading Central Dashboard Course List Matrix Maps (FIXED)
             // =========================================================================
-            List<Map<String, String>> enrolledCourses = new ArrayList<>();
+            List<Map<String, String>> coordinatedCourses = new ArrayList<>();
             
             MongoDatabase db = MongoConnection.getDatabase();
-            MongoCollection<Document> enrollmentCollection = db.getCollection("enrollments");
             MongoCollection<Document> courseCollection = db.getCollection("courses");
+            MongoCollection<Document> enrollmentCollection = db.getCollection("enrollments");
 
-            // Step 1: Scan enrollment collection tracking logs for this student string signature
-            MongoCursor<Document> enrollCursor = enrollmentCollection.find(eq("student_id", userId)).iterator();
-            
-            try {
-                while (enrollCursor.hasNext()) {
-                    String enrolledCode = enrollCursor.next().getString("course_code");
-                    
-                    // Step 2: Query matching collection metadata info payload for each code log pointer found
-                    Document courseDoc = courseCollection.find(eq("course_code", enrolledCode)).first();
-                    
-                    if (courseDoc != null) {
+            // 🌟 BRANCH POINT: Pull information based entirely on security authorization roles
+            if ("lecturer".equalsIgnoreCase(userRole)) {
+                
+                // Lecturer Pipeline: Find records where lecturer_id explicitly matches the teacher's profile key
+                MongoCursor<Document> lecturerCursor = courseCollection.find(eq("lecturer_id", userId)).iterator();
+                try {
+                    while (lecturerCursor.hasNext()) {
+                        Document courseDoc = lecturerCursor.next();
                         Map<String, String> courseMap = new HashMap<>();
+                        // We map "id" to course_code here because your dashboard-lecturer.jsp template calls course.get("id") for the URL parameter
                         courseMap.put("id", courseDoc.getString("course_code")); 
                         courseMap.put("name", courseDoc.getString("title"));
                         courseMap.put("code", courseDoc.getString("course_code"));
-                        enrolledCourses.add(courseMap);
+                        coordinatedCourses.add(courseMap);
                     }
+                } finally {
+                    lecturerCursor.close();
                 }
-            } finally {
-                enrollCursor.close(); 
+                
+            } else {
+                
+                // Student Pipeline: Scan enrollment collection logs first
+                MongoCursor<Document> enrollCursor = enrollmentCollection.find(eq("student_id", userId)).iterator();
+                try {
+                    while (enrollCursor.hasNext()) {
+                        String enrolledCode = enrollCursor.next().getString("course_code");
+                        
+                        // Query structural metadata parameters for each verified code match block found
+                        Document courseDoc = courseCollection.find(eq("course_code", enrolledCode)).first();
+                        
+                        if (courseDoc != null) {
+                            Map<String, String> courseMap = new HashMap<>();
+                            courseMap.put("id", courseDoc.getString("course_code")); 
+                            courseMap.put("name", courseDoc.getString("title"));
+                            courseMap.put("code", courseDoc.getString("course_code"));
+                            coordinatedCourses.add(courseMap);
+                        }
+                    }
+                } finally {
+                    enrollCursor.close(); 
+                }
             }
             
-            // Pass the extracted dynamic data maps context down to the presentation layer
-            request.setAttribute("courses", enrolledCourses);
+            // Pass the extracted collection maps list context down to the presentation engine layers uniformally
+            request.setAttribute("courses", coordinatedCourses);
             
             // =========================================================================
             // ROLE-BASED DYNAMIC VIEW DISPATCHING ENGINE
@@ -105,21 +125,16 @@ public class DashboardServlet extends HttpServlet {
     private void loadCourseWorkspace(HttpServletRequest request, String classCode) throws Exception {
         MongoDatabase db = MongoConnection.getDatabase();
         
-        // =========================================================================
         // Item 1: Fetch Course Header Meta-Data Label Descriptors
-        // =========================================================================
         Document courseDoc = db.getCollection("courses").find(eq("course_code", classCode)).first();
         if (courseDoc != null) {
-            // FIXED: Instantiating the object right here solves the front-end 'null' issue
             lms.model.Course course = new lms.model.Course();
             course.setTitle(courseDoc.getString("title"));
             course.setDescription(courseDoc.getString("description"));
             course.setCourseCode(courseDoc.getString("course_code"));
             
-            // Bind the object structure so courseDetails.jsp can call c.getTitle() safely
             request.setAttribute("course", course);
 
-            // Retaining your old standalone tracking labels intact as structural fallback variables
             request.setAttribute("selectedCourseName", courseDoc.getString("title"));
             request.setAttribute("selectedCourseCode", courseDoc.getString("course_code"));
             request.setAttribute("selectedCourseId", classCode);
@@ -127,9 +142,7 @@ public class DashboardServlet extends HttpServlet {
             request.setAttribute("selectedLecturerId", courseDoc.get("lecturer_id") != null ? courseDoc.get("lecturer_id").toString() : "N/A");
         }
 
-        // =========================================================================
-        // Item 2: Pull Learning Materials mapped precisely to this Course String Node Pointer
-        // =========================================================================
+        // Item 2: Pull Learning Materials mapped precisely to this Course
         List<Map<String, String>> materials = new ArrayList<>();
         MongoCursor<Document> matCursor = db.getCollection("learning_materials").find(eq("course_code", classCode)).iterator();
         try {
@@ -147,9 +160,7 @@ public class DashboardServlet extends HttpServlet {
         }
         request.setAttribute("materials", materials);
 
-        // =========================================================================
-        // Item 3: Pull Task (Assignment) Records mapped precisely to this Course String Node Pointer
-        // =========================================================================
+        // Item 3: Pull Task (Assignment) Records mapped precisely to this Course
         List<Map<String, String>> tasks = new ArrayList<>();
         MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_id", classCode)).iterator();
         try {

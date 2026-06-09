@@ -1,6 +1,6 @@
 <%-- 
     Document   : dashboard-lecturer
-    Created on : 4 Jun 2026, 2:39:19 pm
+    Created on : 4 Jun 2026, 2:39:19 pm
     Author     : DELL
 --%>
 
@@ -36,6 +36,20 @@
     </nav>
 
     <div class="container my-5">
+        <%-- Alert Notifications tracking status changes --%>
+        <% if(request.getParameter("success") != null && "deleted".equals(request.getParameter("success"))) { %>
+        <div class="alert alert-success alert-dismissible fade show rounded-4 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> Course structure and all associated student enrollments permanently removed!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+    <% if(request.getParameter("error") != null && "deletefailed".equals(request.getParameter("error"))) { %>
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> Failed to delete the course module. Please try again.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <% } %>
+
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h1 class="fw-bold tracking-tight mb-1">Instructional Control Console</h1>
@@ -54,17 +68,49 @@
                     for (Map<String, String> course : courses) {
             %>
             <div class="col-xl-4 col-md-6">
-                <a href="DashboardServlet?courseId=<%= course.get("id") %>" class="card faculty-card h-100 p-4">
+                <div class="card faculty-card h-100 p-4" onclick="window.location.href='DashboardServlet?courseId=<%= course.get("code") %>'">
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <span class="badge bg-dark text-white font-monospace rounded-pill small"><%= course.get("code") %></span>
-                        <span class="text-primary small fw-semibold">Manage Studio <i class="bi bi-gear ms-1"></i></span>
+                
+                        <a href="${pageContext.request.contextPath}/course/edit?id=<%= course.get("code") %>" 
+                            class="text-primary small fw-semibold" 
+                            onclick="event.stopPropagation();">
+                            Modify Settings <i class="bi bi-pencil-square ms-1"></i>
+                        </a>
                     </div>
-                    <h4 class="fw-bold text-dark mb-2"><%= course.get("name") %></h4>
-                    <p class="text-muted small mt-auto mb-0"><i class="bi bi-people-fill me-1"></i> View Registered Students</p>
-                </a>
+                    <h4 class="fw-bold text-dark mb-4"><%= course.get("name") %></h4>
+                    
+                    <%-- 🌟 UPDATED: Lower Footer Container managing View + Delete Form actions --%>
+                    <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top border-light-subtle">
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-people-fill me-1"></i> View Registered Students
+                        </p>
+                        
+                        <%-- 🗑️ NEW: Native Form to invoke your backend delete Course method --%>
+                        <form action="<%= request.getContextPath() %>/course/delete" method="POST" 
+                              onsubmit="return confirm('CRITICAL WARNING:\nAre you sure you want to permanently delete this course? This action cannot be undone and will drop all enrolled students.');" 
+                              onclick="event.stopPropagation();" style="display: inline; margin: 0;">
+                            
+                            <%-- Sends the dynamic code (e.g. ddc26c) to your updated MongoDB servlet handler --%>
+                            <input type="hidden" name="courseCode" value="<%= course.get("code") %>" />
+                            
+                            <button type="submit" class="btn p-0 text-danger border-0 bg-transparent small d-flex align-items-center gap-1" style="font-size: 0.875rem; font-weight: 500;">
+                                <i class="bi bi-trash3-fill"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <% } } %>
+            <% } } else { %>
+                <div class="col-12 text-center py-5">
+                    <div class="text-muted fs-4 mb-2"><i class="bi bi-folder-x fs-1"></i></div>
+                    <p class="text-muted">No assigned curriculum structures found in your active storage profile.</p>
+                </div>
+            <% } %>
         </div>
     </div>
+
+    <%-- Include Bootstrap Bundle to allow dynamic alert dismissing via 'X' buttons --%>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
