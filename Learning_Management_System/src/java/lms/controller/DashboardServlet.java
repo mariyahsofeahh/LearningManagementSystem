@@ -17,16 +17,15 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCursor;
 import static com.mongodb.client.model.Filters.eq;
-import lms.db.MongoConnection; 
+import lms.db.MongoConnection;
 import org.bson.Document;
-
 
 public class DashboardServlet extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // 1. Strict Session Verification Check
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
@@ -36,19 +35,25 @@ public class DashboardServlet extends HttpServlet {
 
         String userId = (String) session.getAttribute("userId");
         String userRole = (String) session.getAttribute("userRole");
-        String classCodeParam = request.getParameter("courseId"); 
+        String classCodeParam = request.getParameter("courseId");
 
         try {
             // =========================================================================
-            // SCENARIO A: Dynamic Interior Course Content Processing (Materials & Tasks)
-            // =========================================================================
+// SCENARIO A: Dynamic Interior Course Content Processing (Materials & Tasks)
+// =========================================================================
             if (classCodeParam != null && !classCodeParam.trim().isEmpty()) {
-                
-                // Load core datasets matching this individual classroom layout code tracking indicator
+
+                // 1. Gather MongoDB content payload datasets (materials, tasks, course meta)
                 loadCourseWorkspace(request, classCodeParam);
-                
-                // MODIFIED: Forward straight down to your functional course details view file
-                request.getRequestDispatcher("/courseDetails.jsp").forward(request, response);
+
+                // 2. Dynamic Role-Based Redirection Engine for inside the course workspace
+                if ("lecturer".equalsIgnoreCase(userRole)) {
+                    // Change this path to match the exact filename and folder layout of your lecturer material page
+                    request.getRequestDispatcher("/lecturer/material-lecturer.jsp").forward(request, response);
+                } else {
+                    // Route students to their clean tabular list layout view
+                    request.getRequestDispatcher("/student/material-student.jsp").forward(request, response);
+                }
                 return;
             }
 
@@ -56,36 +61,36 @@ public class DashboardServlet extends HttpServlet {
             // SCENARIO B: Loading Central Dashboard Course List Matrix Maps
             // =========================================================================
             List<Map<String, String>> enrolledCourses = new ArrayList<>();
-            
+
             MongoDatabase db = MongoConnection.getDatabase();
             MongoCollection<Document> enrollmentCollection = db.getCollection("enrollments");
             MongoCollection<Document> courseCollection = db.getCollection("courses");
 
             // Step 1: Scan enrollment collection tracking logs for this student string signature
             MongoCursor<Document> enrollCursor = enrollmentCollection.find(eq("student_id", userId)).iterator();
-            
+
             try {
                 while (enrollCursor.hasNext()) {
                     String enrolledCode = enrollCursor.next().getString("course_code");
-                    
+
                     // Step 2: Query matching collection metadata info payload for each code log pointer found
                     Document courseDoc = courseCollection.find(eq("course_code", enrolledCode)).first();
-                    
+
                     if (courseDoc != null) {
                         Map<String, String> courseMap = new HashMap<>();
-                        courseMap.put("id", courseDoc.getString("course_code")); 
+                        courseMap.put("id", courseDoc.getString("course_code"));
                         courseMap.put("name", courseDoc.getString("title"));
                         courseMap.put("code", courseDoc.getString("course_code"));
                         enrolledCourses.add(courseMap);
                     }
                 }
             } finally {
-                enrollCursor.close(); 
+                enrollCursor.close();
             }
-            
+
             // Pass the extracted dynamic data maps context down to the presentation layer
             request.setAttribute("courses", enrolledCourses);
-            
+
             // =========================================================================
             // ROLE-BASED DYNAMIC VIEW DISPATCHING ENGINE
             // =========================================================================
@@ -104,7 +109,7 @@ public class DashboardServlet extends HttpServlet {
 
     private void loadCourseWorkspace(HttpServletRequest request, String classCode) throws Exception {
         MongoDatabase db = MongoConnection.getDatabase();
-        
+
         // =========================================================================
         // Item 1: Fetch Course Header Meta-Data Label Descriptors
         // =========================================================================
@@ -115,7 +120,7 @@ public class DashboardServlet extends HttpServlet {
             course.setTitle(courseDoc.getString("title"));
             course.setDescription(courseDoc.getString("description"));
             course.setCourseCode(courseDoc.getString("course_code"));
-            
+
             // Bind the object structure so courseDetails.jsp can call c.getTitle() safely
             request.setAttribute("course", course);
 
@@ -136,7 +141,7 @@ public class DashboardServlet extends HttpServlet {
             while (matCursor.hasNext()) {
                 Document doc = matCursor.next();
                 Map<String, String> matItem = new HashMap<>();
-                matItem.put("id", doc.getObjectId("_id").toString()); 
+                matItem.put("id", doc.getObjectId("_id").toString());
                 matItem.put("fileName", doc.getString("file_name"));
                 matItem.put("fileType", doc.getString("file_type"));
                 matItem.put("uploadDate", doc.getString("upload_date"));
@@ -168,7 +173,7 @@ public class DashboardServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         doGet(request, response);
     }
