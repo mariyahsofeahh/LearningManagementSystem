@@ -88,7 +88,7 @@
                     <i class="bi bi-mortarboard-fill text-primary me-2"></i>
                     Student: <%= session.getAttribute("userName") != null ? session.getAttribute("userName") : "User" %>
                 </span>
-                <a href="LogoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <a href="logoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                     <i class="bi bi-box-arrow-right"></i>
                 </a>
             </div>

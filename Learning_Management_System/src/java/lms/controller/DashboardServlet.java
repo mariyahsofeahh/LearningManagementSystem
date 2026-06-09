@@ -48,8 +48,7 @@ public class DashboardServlet extends HttpServlet {
 
                 // 2. Dynamic Role-Based Redirection Engine for inside the course workspace
                 if ("lecturer".equalsIgnoreCase(userRole)) {
-                    // Change this path to match the exact filename and folder layout of your lecturer material page
-                    request.getRequestDispatcher("/lecturer/material-lecturer.jsp").forward(request, response);
+                    request.getRequestDispatcher("/courseDetails.jsp").forward(request, response);
                 } else {
                     // Route students to their clean tabular list layout view
                     request.getRequestDispatcher("/student/material-student.jsp").forward(request, response);
@@ -168,7 +167,7 @@ public class DashboardServlet extends HttpServlet {
 
         // Item 3: Pull Task (Assignment) Records mapped precisely to this Course
         List<Map<String, String>> tasks = new ArrayList<>();
-        MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_id", classCode)).iterator();
+        MongoCursor<Document> taskCursor = db.getCollection("assignments").find(eq("course_code", classCode)).iterator();
         try {
             while (taskCursor.hasNext()) {
                 Document doc = taskCursor.next();
