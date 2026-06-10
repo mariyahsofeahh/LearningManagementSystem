@@ -22,14 +22,14 @@ public class CourseServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+        throws ServletException, IOException {
 
         String path = request.getPathInfo();
 
         if (path == null || path.equals("/") || path.equals("/catalog")) {
             HttpSession session = request.getSession();
             String userRole = (String) session.getAttribute("userRole");
-    
+
             if ("lecturer".equalsIgnoreCase(userRole)) {
                 String lecturerId = (String) session.getAttribute("userId");
                 if (lecturerId == null || lecturerId.trim().isEmpty()) {
@@ -40,13 +40,10 @@ public class CourseServlet extends HttpServlet {
                 request.setAttribute("courses", repository.getAllCourses());
             }
             request.getRequestDispatcher("/courseCatalog.jsp").forward(request, response);
-            
-        } else if (path.equals("/create")) {
-            request.getRequestDispatcher("/lecturer/createCourse.jsp").forward(request, response);
-            
+        
         } else if (path.equals("/edit")) {
             String courseCode = request.getParameter("id");
-            
+        
             if (courseCode != null && !courseCode.trim().isEmpty()) {
                 Course existingCourse = repository.getCourseByCode(courseCode);
                 if (existingCourse != null) {
@@ -54,41 +51,62 @@ public class CourseServlet extends HttpServlet {
                 }
             }
             request.getRequestDispatcher("/lecturer/editCourse.jsp").forward(request, response);
-            
+        
         } else {
-            response.sendRedirect(request.getContextPath() + "/course/catalog");
+            // 🌟 Whitelists everything else (including accidental GET /create hits) straight back home!
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
         }
     }
     
-    private void registerNewCourse(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Course course = new Course();
-
-        String manualCode = request.getParameter("courseCode");
-        String title = request.getParameter("title");
-        String description = request.getParameter("description");
-
-        if (manualCode == null || manualCode.trim().isEmpty() || title == null || title.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=missingfields");
-            return;
-        }
-
-        course.setCourseCode(manualCode);
-        course.setTitle(title);
-        course.setDescription(description);
-
-        HttpSession session = request.getSession(false);
-        String sessionUid = (session != null) ? (String) session.getAttribute("userId") : null;
+    private void registerNewCourse(HttpServletRequest request, HttpServletResponse response) 
+        throws ServletException, IOException {
     
-        if (sessionUid == null) {
-            response.sendRedirect(request.getContextPath() + "/login.jsp");
+        // 1. Extract the values using the EXACT names from your modal form inputs!
+        String courseCode = request.getParameter("courseCode");
+        String courseTitle = request.getParameter("courseName"); // Modal uses 'courseName'
+        String lecturerId = request.getParameter("lecturerId");
+    
+        // Safety check: if the modal fields are empty, return to dashboard with an error flag
+        if (courseCode == null || courseCode.trim().isEmpty() || 
+            courseTitle == null || courseTitle.trim().isEmpty()) {
+        
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=failed");
             return;
         }
-        course.setLecturerId(sessionUid);
 
-        if (repository.createCourse(course)) {
-            response.sendRedirect(request.getContextPath() + "/course/catalog?success=created");
-        } else {
-            response.sendRedirect(request.getContextPath() + "/lecturer/createCourse.jsp?error=true");
+        try {
+            // 1. 🌟 NEW RULE: Check if the course code already exists in your database collection
+            // (Assuming your CourseDAO has a method like getCourseByCode or similar to lookup records)
+            lms.model.Course duplicateCheck = repository.getCourseByCode(courseCode.trim());
+    
+            if (duplicateCheck != null) {
+                // 🛑 CODE ALREADY TAKEN: Reject insertion immediately and bounce back with a custom error indicator flag
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=duplicatecode");
+                return; 
+            }
+
+            // 2. If it's unique, proceed to build your Model Object safely
+            lms.model.Course newCourse = new lms.model.Course();
+            newCourse.setCourseCode(courseCode.trim());
+            newCourse.setTitle(courseTitle.trim());
+            newCourse.setLecturerId(lecturerId);
+    
+            // Read the description parameter from the form layout safely
+            String courseDesc = request.getParameter("courseDescription");
+            newCourse.setDescription(courseDesc != null ? courseDesc.trim() : "No description provided yet.");
+
+            // 3. Save directly into your MongoDB cluster via your repository
+            boolean isSaved = repository.createCourse(newCourse);
+
+            if (isSaved) {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?success=created");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=failed");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=failed");
         }
     }
 
@@ -161,17 +179,29 @@ public class CourseServlet extends HttpServlet {
             return;
         }
 
-        // Matches the name="courseCode" from your JSP form hidden input element!
+        // 1. Capture the parameter sent by your hidden form field
         String courseCode = request.getParameter("courseCode"); 
+
         if (courseCode != null && !courseCode.trim().isEmpty()) {
+    
+            // 2. Execute the MongoDB deletion script
             if (repository.deleteCourseByCode(courseCode)) {
-                // ✅ UPDATED: Redirect cleanly back to your main DashboardServlet with the success flag
+        
+                // ✅ SUCCESS PATH: Force the browser to bounce back to the main dashboard router
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?success=deleted");
+                return; // Terminate execution immediately to prevent accidental falling through
+        
+            } else {
+        
+                // ❌ REPOSITORY FAILURE PATH: Bounce back with an error indicator flag
+                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=failed");
                 return;
             }
+        } else {
+            // ⚠️ MISSING PARAMETER FALLBACK: Safety exit route back home if the variable string was empty
+            response.sendRedirect(request.getContextPath() + "/DashboardServlet");
+            return;
         }
-        // ✅ UPDATED: Redirect to DashboardServlet instead of /course/catalog
-        response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=deletefailed");
     }
     
     private void studentDropCourse(HttpServletRequest request, HttpServletResponse response) throws IOException {

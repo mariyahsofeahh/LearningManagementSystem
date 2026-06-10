@@ -34,7 +34,7 @@
     <form action="${pageContext.request.contextPath}/course/create" method="POST">
         <div class="mb-3">
             <label>Course Code:</label>
-            <input type="text" name="courseCode" class="form-control" placeholder="e.g., CSF3043" required>
+            <input type="text" name="courseCode" class="form-control rounded-3 font-monospace" placeholder="e.g. CS-301" required>
         </div>
         <div class="mb-3">
             <label>Course Title:</label>

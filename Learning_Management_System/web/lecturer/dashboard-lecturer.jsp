@@ -67,7 +67,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <% } %>
-
+    <% if(request.getParameter("error") != null && "duplicatecode".equals(request.getParameter("error"))) { %>
+    <div class="alert alert-warning alert-dismissible fade show rounded-4 mb-4" role="alert">
+        <i class="bi bi-exclamation-octagon-fill me-2"></i> 
+        <strong>Registration Blocked:</strong> That classroom unique code is already assigned to another active workspace! Please choose a unique identifier.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <% } %>
     <div class="row align-items-center mb-5 g-4">
         <div class="col-md-6">
             <h1 class="fw-bold tracking-tight mb-1">My Managed Classrooms</h1>
@@ -87,30 +93,40 @@
                 for (Map<String, String> course : courses) {
         %>
         <div class="col-xl-4 col-md-6">
-            <a href="DashboardServlet?courseId=<%= course.get("id") %>" class="card course-card h-100 p-4">
+            <div class="card course-card h-100 p-4 position-relative" 
+                onclick="window.location.href='DashboardServlet?courseId=<%= course.get("id") %>'">
+        
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-4">
                         <span class="badge bg-primary-subtle text-primary font-monospace rounded-pill small"><%= course.get("code") %></span>
-                        <i class="bi bi-gear fs-5 text-muted"></i>
+                
+                        <a href="<%= request.getContextPath() %>/course/edit?id=<%= course.get("id") %>" 
+                            class="text-primary text-decoration-none fw-medium small"
+                            onclick="event.stopPropagation();">
+                            Manage Studio <i class="bi bi-gear-fill ms-1"></i>
+                        </a>
                     </div>
+            
                     <h4 class="fw-bold text-dark mb-2"><%= course.get("name") %></h4>
                 </div>
-                
+        
                 <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top border-light-subtle">
                     <p class="text-muted small mb-0">
-                        <i class="bi bi-people-fill text-secondary me-1"></i> Workspace Active
+                        <i class="bi bi-people-fill text-secondary me-1"></i> View Registered Students
                     </p>
-                    
+            
                     <form action="<%= request.getContextPath() %>/course/delete" method="POST" 
-                          onsubmit="return confirm('Are you sure you want to permanently delete this course workspace? This deletes all structural materials associated with it.');" 
-                          onclick="event.stopPropagation();" style="display: inline;">
-                        <input type="hidden" name="courseId" value="<%= course.get("id") %>" />
-                        <button type="submit" class="btn-delete-inline">
+                        onsubmit="return confirm('Are you sure you want to permanently delete this course workspace? This deletes all structural materials associated with it.');" 
+                        onclick="event.stopPropagation();" 
+                        style="display: inline; margin: 0; padding: 0;">
+                
+                        <input type="hidden" name="courseCode" value="<%= course.get("code") %>" />
+                        <button type="submit" class="btn-delete-inline" style="background: none; border: none; color: #d92d20; font-size: 14px; font-weight: 500;">
                             <i class="bi bi-trash3"></i> Delete
                         </button>
                     </form>
                 </div>
-            </a>
+            </div>
         </div>
         <% } } else { %>
             <div class="col-12 text-center py-5">
@@ -135,11 +151,16 @@
                         <label class="form-label fw-semibold text-secondary small">Course Subject Title</label>
                         <input type="text" name="courseName" class="form-control rounded-3" placeholder="e.g. Advanced System Architecture" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary small">Course Description</label>
+                        <textarea name="courseDescription" class="form-control rounded-3" rows="2" placeholder="Brief overview of the course workspace parameters..."></textarea>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-secondary small">Classroom Unique Identification Code</label>
                         <input type="text" name="courseCode" class="form-control rounded-3 font-monospace" placeholder="e.g. CS-301" required>
                     </div>
-                    <p class="text-muted small mb-0"><i class="bi bi-info-circle me-1"></i> Creating this profile assigns workspace parameters to your lecturer profile context identifier automatically.</p>
                 </div>
                 <div class="modal-footer border-top-0 pt-0">
                     <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancel</button>
