@@ -42,7 +42,7 @@
             </a>
             <div class="d-flex align-items-center gap-3">
                 <span class="navbar-text fw-medium text-dark"><i class="bi bi-person-badge me-1"></i> Lecturer: <%= session.getAttribute("userName") %></span>
-                <a href="<%= request.getContextPath() %>/LogoutServlet" class="btn btn-outline-danger btn-sm rounded-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <a href="<%= request.getContextPath() %>/logoutServlet" class="btn btn-outline-danger btn-sm rounded-2"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
         </div>
     </nav>

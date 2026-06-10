@@ -53,6 +53,23 @@ public class CourseDAO {
         return list;
     }
 
+    public List<Course> getCoursesByStudent(String studentId) {
+        List<Course> list = new ArrayList<>();
+
+        try (MongoCursor<Document> cursor = enrollmentCollection.find(eq("student_id", studentId)).iterator()) {
+            while (cursor.hasNext()) {
+                String courseCode = cursor.next().getString("course_code");
+                Document courseDoc = courseCollection.find(eq("course_code", courseCode)).first();
+                if (courseDoc != null) {
+                    list.add(mapDocumentToCourse(courseDoc));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // Fetch details of a single course using its code (e.g., CSE3433)
     public Course getCourseByCode(String courseCode) {
         try {
@@ -74,7 +91,6 @@ public class CourseDAO {
                     .append("class_code", course.getCourseCode().trim().toLowerCase()) 
                     // 📚 Keep the structural academic curriculum code separate
                     .append("course_code", course.getCourseCode().trim()) 
-                   .append("course_code", course.getCourseCode().trim()) 
                     .append("title", course.getTitle().trim())
                     .append("description", course.getDescription().trim())
                     .append("lecturer_id", course.getLecturerId());

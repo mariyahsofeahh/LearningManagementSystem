@@ -19,6 +19,7 @@ public class Assignment {
     private String filePath;
     private String deadline;
     private String lecturerId;
+    private String createdAt;
 
     public Assignment() {}
 
@@ -47,4 +48,7 @@ public class Assignment {
 
     public String getLecturerId() { return lecturerId; }
     public void setLecturerId(String lecturerId) { this.lecturerId = lecturerId; }
+
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

@@ -3,8 +3,10 @@ package lms.DAO;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Sorts;
 import static com.mongodb.client.model.Filters.eq;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import lms.db.MongoConnection;
 import lms.model.Assignment;
@@ -31,7 +33,8 @@ public class AssignmentDAO {
                     .append("file_name", a.getFileName())
                     .append("file_path", a.getFilePath())
                     .append("deadline", a.getDeadline())
-                    .append("lecturer_id", a.getLecturerId());
+                    .append("lecturer_id", a.getLecturerId())
+                    .append("created_at", new Date());
 
             collection.insertOne(doc);
             return true;
@@ -47,7 +50,8 @@ public class AssignmentDAO {
         List<Assignment> list = new ArrayList<>();
 
         try {
-            FindIterable<Document> docs = collection.find(eq("course_code", courseCode));
+            FindIterable<Document> docs = collection.find(eq("course_code", courseCode))
+                    .sort(Sorts.descending("created_at"));
 
             for (Document doc : docs) {
                 list.add(mapDocumentToAssignment(doc));
@@ -74,7 +78,8 @@ public class AssignmentDAO {
 
             // Find all assignments that belong to this lecturer
             FindIterable<Document> docs
-                    = collection.find(eq("lecturer_id", lecturerId));
+                    = collection.find(eq("lecturer_id", lecturerId))
+                            .sort(Sorts.descending("created_at"));
 
             for (Document doc : docs) {
 
@@ -121,7 +126,18 @@ public class AssignmentDAO {
         assignment.setFilePath(doc.getString("file_path"));
         assignment.setDeadline(doc.getString("deadline"));
         assignment.setLecturerId(doc.getString("lecturer_id"));
+        assignment.setCreatedAt(formatDate(doc.get("created_at")));
 
         return assignment;
+    }
+
+    private String formatDate(Object value) {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof Date) {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm").format((Date) value);
+        }
+        return value.toString();
     }
 }

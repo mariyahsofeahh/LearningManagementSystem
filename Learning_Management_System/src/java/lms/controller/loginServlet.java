@@ -2,19 +2,16 @@ package lms.controller;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import lms.DAO.UserDAO; // Importing your clean MongoDB operations wrapper
 import lms.service.UserService;
 import org.bson.Document;
 
-
 public class loginServlet extends HttpServlet {
 
-    private final UserDAO userDAO = new UserDAO();
+    private final UserService userService = new UserService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -27,10 +24,12 @@ public class loginServlet extends HttpServlet {
                 handleSignUp(request, response);
             } else if ("login".equals(action)) {
                 handleLogin(request, response);
+            } else {
+                response.sendRedirect("login.jsp");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "An unexpected runtime compilation validation error occurred.");
+            request.setAttribute("error", "An unexpected error occurred.");
             if ("signup".equals(action)) {
                 request.getRequestDispatcher("register.jsp").forward(request, response);
             } else {
@@ -39,84 +38,38 @@ public class loginServlet extends HttpServlet {
         }
     }
 
-    private void handleSignUp(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    private void handleSignUp(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
         String name = request.getParameter("fullName");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String role = request.getParameter("role");
 
-        // Use custom validation rule method to mimic SQL Unique constraints checks
-        if (userDAO.emailExists(email)) {
-            request.setAttribute("error", "An account with this email address already exists.");
-            request.getRequestDispatcher("register.jsp").forward(request, response);
-            return;
-        }
-
-        boolean success = userDAO.registerUser(name, email, password, role);
-
-        if (success) {
+        if (userService.register(name, email, password, role)) {
             response.sendRedirect("login.jsp?regSuccess=true");
         } else {
-            request.setAttribute("error", "Failed to compile your credentials profile. Try again.");
+            request.setAttribute("error", "An account with this email address already exists.");
             request.getRequestDispatcher("register.jsp").forward(request, response);
         }
     }
 
-//    private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws Exception {
-//        String email = request.getParameter("email");
-//        String password = request.getParameter("password");
-//
-//        // Query MongoDB via our isolated data tier class
-//        Document userDoc = userDAO.authenticateUser(email, password);
-//
-//        if (userDoc != null) {
-//            // Instantiate your HTTP Session State Tracking mechanism
-//            HttpSession session = request.getSession(true);
-//            
-//            // CONVERTED: MongoDB unique Hex Object IDs read cleanly as Strings
-//            String stringId = userDoc.getObjectId("_id").toString(); 
-//            
-//            session.setAttribute("userId", stringId);
-//            session.setAttribute("userName", userDoc.getString("full_name"));
-//            session.setAttribute("userRole", userDoc.getString("role"));
-//
-//            // Safely transfer flow over to your primary Dashboard landing handler view
-//            response.sendRedirect("DashboardServlet");
-//        } else {
-//            request.setAttribute("error", "The password or email parameters were incorrect.");
-//            request.getRequestDispatcher("login.jsp").forward(request, response);
-//        }
-//    }
-//}
     private void handleLogin(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
 
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-
-        // 🔥 CREATE SERVICE OBJECT
-        UserService service = new UserService();
-
-        // 🔥 CALL MONGODB THROUGH SERVICE
-        Document user = service.login(email, password);
+        Document user = userService.login(email, password);
 
         if (user != null) {
-
-            // 🔐 CREATE SESSION
-            HttpSession session = request.getSession();
-
+            HttpSession session = request.getSession(true);
             session.setAttribute("userId", user.getObjectId("_id").toString());
             session.setAttribute("userName", user.getString("full_name"));
             session.setAttribute("userRole", user.getString("role"));
-
-            // 🎯 REDIRECT AFTER LOGIN
             response.sendRedirect("DashboardServlet");
-
         } else {
-
             request.setAttribute("error", "Invalid email or password");
             request.getRequestDispatcher("login.jsp").forward(request, response);
         }
-    
     }
 }

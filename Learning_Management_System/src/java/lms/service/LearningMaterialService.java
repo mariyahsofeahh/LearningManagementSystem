@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Sorts;
 import static com.mongodb.client.model.Filters.eq;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,16 +32,18 @@ public class LearningMaterialService {
     /**
      * Executes material validation and data store sequences sequentially.
      */
-    public boolean processAndStoreMaterial(String name, String type, String path) {
+    public boolean processAndStoreMaterial(String courseCode, String name, String type, String path) {
         
         // Validation Guard: Verifies incoming file parameter integrity
-        if (name == null || name.trim().isEmpty() || path == null) {
+        if (courseCode == null || courseCode.trim().isEmpty()
+                || name == null || name.trim().isEmpty() || path == null) {
             return false; 
         }
         
         try {
             // Package your metadata properties into a clean BSON document payload
             Document doc = new Document()
+                    .append("course_code", courseCode.trim())
                     .append("file_name", name.trim())
                     .append("file_type", type)
                     .append("file_path", path)
@@ -57,6 +60,10 @@ public class LearningMaterialService {
         }
     }
 
+    public boolean processAndStoreMaterial(String name, String type, String path) {
+        return processAndStoreMaterial("general", name, type, path);
+    }
+
     /**
      * Fetches metadata for all materials sorted by the newest upload date.
      */
@@ -70,29 +77,38 @@ public class LearningMaterialService {
                                                     .iterator();
             try {
                 while (cursor.hasNext()) {
-                    Document doc = cursor.next();
-                    Map<String, String> material = new HashMap<>();
-                    
-                    // Convert Hexadecimal cloud Object IDs to Strings so your frontend JSPs can render them
-                    material.put("id", doc.getObjectId("_id").toString());
-                    material.put("fileName", doc.getString("file_name"));
-                    material.put("fileType", doc.getString("file_type"));
-                    material.put("filePath", doc.getString("file_path"));
-                    
-                    // Parse Date entries safely into standard printable string indicators
-                    if (doc.get("upload_date") != null) {
-                        material.put("uploadDate", doc.getDate("upload_date").toString());
-                    } else {
-                        material.put("uploadDate", "");
-                    }
-                    
-                    materialsList.add(material);
+                    materialsList.add(mapDocumentToMaterial(cursor.next()));
                 }
             } finally {
                 cursor.close(); // Crucial: Safely drop connection cursor to prevent server memory leaks
             }
         } catch (Exception e) {
             System.err.println("MongoDB Error fetching your materials catalog collection:");
+            e.printStackTrace();
+        }
+        return materialsList;
+    }
+
+    public List<Map<String, String>> getMaterialsByCourse(String courseCode) {
+        List<Map<String, String>> materialsList = new ArrayList<>();
+
+        if (courseCode == null || courseCode.trim().isEmpty()) {
+            return materialsList;
+        }
+
+        try {
+            MongoCursor<Document> cursor = collection.find(eq("course_code", courseCode.trim()))
+                    .sort(Sorts.descending("upload_date"))
+                    .iterator();
+            try {
+                while (cursor.hasNext()) {
+                    materialsList.add(mapDocumentToMaterial(cursor.next()));
+                }
+            } finally {
+                cursor.close();
+            }
+        } catch (Exception e) {
+            System.err.println("MongoDB Error fetching course materials:");
             e.printStackTrace();
         }
         return materialsList;
@@ -115,6 +131,7 @@ public class LearningMaterialService {
                 material.put("fileName", doc.getString("file_name"));
                 material.put("fileType", doc.getString("file_type"));
                 material.put("filePath", doc.getString("file_path"));
+                material.put("courseCode", doc.getString("course_code"));
                 return material;
             }
         } catch (IllegalArgumentException e) {
@@ -141,5 +158,27 @@ public class LearningMaterialService {
             System.err.println("NoSQL transaction error caught while executing deleteOne operational routines:");
             e.printStackTrace();
         }
+    }
+
+    private Map<String, String> mapDocumentToMaterial(Document doc) {
+        Map<String, String> material = new HashMap<>();
+        material.put("id", doc.getObjectId("_id").toString());
+        material.put("fileName", doc.getString("file_name"));
+        material.put("fileType", doc.getString("file_type"));
+        material.put("filePath", doc.getString("file_path"));
+        material.put("courseCode", doc.getString("course_code"));
+        material.put("uploadDate", formatDate(doc.get("upload_date"), "yyyy-MM-dd HH:mm"));
+        material.put("sortDate", formatDate(doc.get("upload_date"), "yyyy-MM-dd HH:mm:ss"));
+        return material;
+    }
+
+    private String formatDate(Object value, String pattern) {
+        if (value == null) {
+            return "";
+        }
+        if (value instanceof Date) {
+            return new SimpleDateFormat(pattern).format((Date) value);
+        }
+        return value.toString();
     }
 }

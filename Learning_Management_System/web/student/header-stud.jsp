@@ -45,7 +45,7 @@
 
 <nav class="navbar navbar-expand-lg glass-nav sticky-top py-3">
     <div class="container">
-        <a class="navbar-brand fw-bold text-dark d-flex align-items-center" href="DashboardServlet">
+        <a class="navbar-brand fw-bold text-dark d-flex align-items-center" href="${pageContext.request.contextPath}/DashboardServlet">
             <span class="bg-primary text-white p-2 rounded-3 me-2 d-inline-flex shadow-sm">
                 <i class="bi bi-layers-half"></i>
             </span>
@@ -60,23 +60,23 @@
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1">
                 <% if (studentCourseId != null && !studentCourseId.isEmpty()) { %>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern <%= activePage.equals("dashboard") ? "" : "" %>" href="DashboardServlet">
+                        <a class="nav-link nav-link-modern <%= activePage.equals("dashboard") ? "" : "" %>" href="${pageContext.request.contextPath}/DashboardServlet">
                             <i class="bi bi-house-door me-1"></i> My Courses
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern <%= activePage.equals("materials") ? "active" : "" %>" href="LearningMaterialServlet?courseId=<%= studentCourseId %>">
+                        <a class="nav-link nav-link-modern <%= activePage.equals("materials") ? "active" : "" %>" href="${pageContext.request.contextPath}/DashboardServlet?courseId=<%= studentCourseId %>#materials">
                             <i class="bi bi-file-earmark-text me-1"></i> Materials
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern <%= activePage.equals("tasks") ? "active" : "" %>" href="TaskServlet?courseId=<%= studentCourseId %>">
+                        <a class="nav-link nav-link-modern <%= activePage.equals("tasks") ? "active" : "" %>" href="${pageContext.request.contextPath}/DashboardServlet?courseId=<%= studentCourseId %>#tasks">
                             <i class="bi bi-check2-square me-1"></i> Tasks
                         </a>
                     </li>
                 <% } else { %>
                     <li class="nav-item">
-                        <a class="nav-link nav-link-modern active" href="DashboardServlet">
+                        <a class="nav-link nav-link-modern active" href="${pageContext.request.contextPath}/DashboardServlet">
                             <i class="bi bi-grid-1x2-fill me-1"></i> Academic Dashboard
                         </a>
                     </li>
@@ -88,7 +88,7 @@
                     <i class="bi bi-mortarboard-fill text-primary me-2"></i>
                     Student: <%= session.getAttribute("userName") != null ? session.getAttribute("userName") : "User" %>
                 </span>
-                <a href="logoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                <a href="${pageContext.request.contextPath}/logoutServlet" class="btn btn-outline-danger btn-sm rounded-pill px-3">
                     <i class="bi bi-box-arrow-right"></i>
                 </a>
             </div>

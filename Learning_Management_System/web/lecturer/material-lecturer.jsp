@@ -1,5 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List, java.util.Map" %>
+<%
+    String courseId = request.getParameter("courseId");
+    if (courseId == null) {
+        courseId = (String) request.getAttribute("courseId");
+    }
+    if (courseId == null) {
+        courseId = "";
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,18 +45,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg glass-nav sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-dark d-flex align-items-center" href="#">
-                <span class="bg-dark text-white p-2 rounded-3 me-2 d-inline-flex"><i class="bi bi-terminal-box-fill"></i></span>
-                <span>eduSphere <span class="text-primary fw-light">Faculty</span></span>
-            </a>
-            <div class="d-flex align-items-center">
-                <span class="badge bg-dark-subtle text-dark border px-3 py-2 rounded-pill me-3">Professor Mode</span>
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80" class="rounded-circle border" width="40" height="40">
-            </div>
-        </div>
-    </nav>
+    <%@ include file="header-lect.jsp" %>
 
     <div class="container my-5">
         <% if(request.getParameter("success") != null) { %>
@@ -65,14 +63,15 @@
         <div class="row g-5">
             <div class="col-lg-4">
                 <div class="sticky-top" style="top: 100px;">
-                    <h4 class="fw-bold mb-1">Asset Intake Pipeline</h4>
-                    <p class="text-muted small mb-4">Distribute lectures, scripts, matrices and visual material instantly down to standard client roles.</p>
+                    <h4 class="fw-bold mb-1">Upload Material</h4>
+                    <p class="text-muted small mb-4">Add files for this course. Students can view them from the Materials tab.</p>
                     
-                    <form action="LearningMaterialServlet" method="POST" enctype="multipart/form-data">
+                    <form action="${pageContext.request.contextPath}/LearningMaterialServlet" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="courseCode" value="<%= courseId %>">
                         <div class="drop-zone p-5 text-center shadow-sm cursor-pointer" onclick="document.getElementById('fileInput').click()">
                             <div class="icon-shape bg-light mx-auto mb-3 text-primary"><i class="bi bi-cloud-plus-fill fs-3"></i></div>
-                            <h6 class="fw-semibold mb-1">Upload deployment package</h6>
-                            <p class="text-muted small mb-0">Click to browse your workstation file tree</p>
+                            <h6 class="fw-semibold mb-1">Upload course file</h6>
+                            <p class="text-muted small mb-0">Click to browse your computer</p>
                             <input type="file" name="file" id="fileInput" class="d-none" required onchange="this.form.submit()">
                         </div>
                     </form>
@@ -82,8 +81,8 @@
             <div class="col-lg-8">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
-                        <h4 class="fw-bold mb-0">Active Course Manifest</h4>
-                        <p class="text-muted small mb-0">Auditing and modulating distributed educational files.</p>
+                        <h4 class="fw-bold mb-0">Uploaded Materials</h4>
+                        <p class="text-muted small mb-0">Files are listed newest first with their upload date.</p>
                     </div>
                 </div>
 
@@ -92,9 +91,9 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light border-bottom">
                                 <tr>
-                                    <th class="ps-4 py-3 text-muted fw-semibold small">RESOURCE IDENTIFIER</th>
-                                    <th class="py-3 text-muted fw-semibold small">INGESTION TIMESTEP</th>
-                                    <th class="text-end pe-4 py-3 text-muted fw-semibold small">MUTATE</th>
+                                    <th class="ps-4 py-3 text-muted fw-semibold small">FILE</th>
+                                    <th class="py-3 text-muted fw-semibold small">DATE UPLOADED</th>
+                                    <th class="text-end pe-4 py-3 text-muted fw-semibold small">ACTIONS</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -110,10 +109,10 @@
                                             <span class="fw-semibold text-dark"><%= material.get("fileName") %></span>
                                         </div>
                                     </td>
-                                    <td class="text-muted small"><%= material.get("uploadDate").substring(0, 16) %></td>
+                                    <td class="text-muted small"><%= material.get("uploadDate") != null ? material.get("uploadDate") : "" %></td>
                                     <td class="text-end pe-4">
-                                        <a href="#" class="action-icon-btn me-1"><i class="bi bi-pencil"></i></a>
-                                        <a href="LearningMaterialServlet?action=delete&id=<%= material.get("id") %>" class="action-icon-btn btn-delete"><i class="bi bi-trash3"></i></a>
+                                        <a href="${pageContext.request.contextPath}/LearningMaterialServlet?action=view&id=<%= material.get("id") %>" target="_blank" class="action-icon-btn me-1"><i class="bi bi-box-arrow-up-right"></i></a>
+                                        <a href="${pageContext.request.contextPath}/LearningMaterialServlet?action=delete&id=<%= material.get("id") %>&courseId=<%= courseId %>" class="action-icon-btn btn-delete" onclick="return confirm('Delete this material?');"><i class="bi bi-trash3"></i></a>
                                     </td>
                                 </tr>
                                 <% 
@@ -122,7 +121,7 @@
                                     %>
                                 <tr>
                                     <td colspan="3" class="text-center py-5 text-muted">
-                                        <i class="bi bi-bezier2 display-6 d-block mb-2 text-black-50"></i> Pipeline directory empty.
+                                        <i class="bi bi-folder2-open display-6 d-block mb-2 text-black-50"></i> No materials uploaded yet.
                                     </td>
                                 </tr>
                                 <% } %>

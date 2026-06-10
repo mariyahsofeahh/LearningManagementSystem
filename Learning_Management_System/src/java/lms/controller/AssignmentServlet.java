@@ -9,16 +9,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import lms.DAO.AssignmentDAO;
-import lms.DAO.SubmissionDAO;
 import lms.model.Assignment;
 import lms.model.Submission;
+import lms.service.AssignmentService;
+import lms.service.SubmissionService;
 
 @WebServlet("/assignment/*")
 public class AssignmentServlet extends HttpServlet {
 
-    private final AssignmentDAO assignmentDAO = new AssignmentDAO();
-    private final SubmissionDAO submissionDAO = new SubmissionDAO();
+    private final AssignmentService assignmentService = new AssignmentService();
+    private final SubmissionService submissionService = new SubmissionService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -59,18 +59,18 @@ public class AssignmentServlet extends HttpServlet {
             List<Assignment> assignments;
 
             if (courseCode != null && !courseCode.trim().isEmpty()) {
-                assignments = assignmentDAO.getAssignmentsByCourse(courseCode);
+                assignments = assignmentService.getAssignmentsByCourse(courseCode);
             } else {
-                assignments = assignmentDAO.getAssignmentsByLecturer(userId);
+                assignments = assignmentService.getAssignmentsByLecturer(userId);
             }
 
             request.setAttribute("assignments", assignments);
             request.setAttribute("courseCode", courseCode);
-            request.getRequestDispatcher("/lecturer/assignmentList.jsp").forward(request, response);
+            request.getRequestDispatcher("/lecturer/assignmentLIst.jsp").forward(request, response);
 
         } else if (path.equals("/view")) {
             String assignmentId = request.getParameter("id");
-            Assignment task = assignmentDAO.getAssignmentById(assignmentId);
+            Assignment task = assignmentService.getAssignmentById(assignmentId);
 
             if (task == null) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=assignmentnotfound");
@@ -81,12 +81,12 @@ public class AssignmentServlet extends HttpServlet {
 
             if ("lecturer".equalsIgnoreCase(userRole)) {
                 // Fetch all submitted files across students for evaluation routing
-                List<Submission> submissionsList = submissionDAO.getSubmissionsByAssignment(assignmentId);
+                List<Submission> submissionsList = submissionService.getSubmissionsByAssignment(assignmentId);
                 request.setAttribute("submissions", submissionsList);
                 request.getRequestDispatcher("/lecturer/lecturerReview.jsp").forward(request, response);
             } else {
                 // Fetch specific individual response data record matching logging student signature
-                Submission studentRecord = submissionDAO.getStudentSubmission(assignmentId, userId);
+                Submission studentRecord = submissionService.getStudentSubmission(assignmentId, userId);
                 request.setAttribute("submission", studentRecord);
                 request.getRequestDispatcher("/student/assignmentView.jsp").forward(request, response);
             }
@@ -129,7 +129,7 @@ public class AssignmentServlet extends HttpServlet {
             a.setDeadline(request.getParameter("deadline"));
             a.setLecturerId(userId);
 
-            if (assignmentDAO.createAssignment(a)) {
+            if (assignmentService.createAssignment(a)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode);
             } else {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&error=createfailed");
@@ -155,7 +155,7 @@ public class AssignmentServlet extends HttpServlet {
             s.setStudentId(userId);
             s.setStudentFileUrl(fileUrl.trim());
 
-            if (submissionDAO.submitWork(s)) {
+            if (submissionService.submitWork(s)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&success=submitted");
             } else {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&error=failed");
@@ -178,7 +178,7 @@ public class AssignmentServlet extends HttpServlet {
                 return;
             }
 
-            if (submissionDAO.gradeSubmission(subId, grade, feedback)) {
+            if (submissionService.gradeSubmission(subId, grade, feedback)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&success=graded");
             } else {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&error=failed");

@@ -54,13 +54,13 @@
     <div class="container my-5">
         <div class="row align-items-center mb-5 row-gap-3">
             <div class="col-md-6">
-                <h1 class="fw-bold tracking-tight mb-1">Academic Repository</h1>
-                <p class="text-muted mb-0">Access structural learning blueprints, video presentations, and course documentation.</p>
+                <h1 class="fw-bold tracking-tight mb-1">Learning Materials</h1>
+                <p class="text-muted mb-0">View files uploaded by your lecturer for this course.</p>
             </div>
             <div class="col-md-6">
                 <div class="search-wrapper position-relative ms-md-auto" style="max-width: 400px;">
                     <i class="bi bi-search"></i>
-                    <input type="text" class="form-control py-2.5 ps-5 shadow-sm bg-white" placeholder="Search parameters or file formats...">
+                    <input type="text" class="form-control py-2.5 ps-5 shadow-sm bg-white" placeholder="Search files...">
                 </div>
             </div>
         </div>
@@ -70,7 +70,10 @@
                 List<Map<String, String>> materials = (List<Map<String, String>>) request.getAttribute("materials");
                 if (materials != null && !materials.isEmpty()) {
                     for (Map<String, String> material : materials) {
-                        boolean isVideo = material.get("fileType").contains("video") || material.get("fileName").endsWith(".mp4");
+                        String fileType = material.get("fileType") != null ? material.get("fileType") : "";
+                        String fileName = material.get("fileName") != null ? material.get("fileName") : "";
+                        String uploadDate = material.get("uploadDate") != null ? material.get("uploadDate") : "";
+                        boolean isVideo = fileType.contains("video") || fileName.endsWith(".mp4");
             %>
             <div class="col-xl-4 col-md-6">
                 <div class="card material-card p-4 shadow-sm h-100">
@@ -79,19 +82,19 @@
                             <i class="bi <%= isVideo ? "bi-play-circle-fill" : "bi-file-earmark-pdf-fill" %> fs-4"></i>
                         </div>
                         <span class="badge rounded-pill bg-light text-dark border px-3 py-2 text-uppercase font-monospace" style="font-size: 0.7rem;">
-                            <%= material.get("fileType").split("/")[material.get("fileType").split("/").length - 1] %>
+                            <%= fileType.contains("/") ? fileType.substring(fileType.lastIndexOf("/") + 1) : fileType %>
                         </span>
                     </div>
                     
                     <h5 class="fw-bold mb-1 text-truncate" title="<%= material.get("fileName") %>">
-                        <%= material.get("fileName") %>
+                        <%= fileName %>
                     </h5>
-                    <p class="text-muted small mb-4"><i class="bi bi-calendar3 me-1"></i> Published: <%= material.get("uploadDate").substring(0, 10) %></p>
+                    <p class="text-muted small mb-4"><i class="bi bi-calendar3 me-1"></i> Published: <%= uploadDate %></p>
                     
                     <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between">
-                        <span class="text-muted small"><i class="bi bi-hdd me-1"></i> Cloud Ready</span>
-                        <a href="LearningMaterialServlet?action=view&id=<%= material.get("id") %>" target="_blank" class="btn btn-outline-dark btn-sm btn-action px-4">
-                            Launch Resource <i class="bi bi-arrow-up-right ms-1"></i>
+                        <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i><%= uploadDate %></span>
+                        <a href="${pageContext.request.contextPath}/LearningMaterialServlet?action=view&id=<%= material.get("id") %>" target="_blank" class="btn btn-outline-dark btn-sm btn-action px-4">
+                            Open File <i class="bi bi-arrow-up-right ms-1"></i>
                         </a>
                     </div>
                 </div>
@@ -103,8 +106,8 @@
             <div class="col-100 text-center py-5">
                 <div class="p-5 bg-white rounded-4 border border-dashed text-center max-width-md mx-auto" style="max-width: 500px;">
                     <div class="icon-shape bg-light mx-auto mb-3"><i class="bi bi-folder-x fs-3 text-muted"></i></div>
-                    <h5 class="fw-bold">No active material vectors found</h5>
-                    <p class="text-muted small">Your course lecturer hasn't added files to this directory node yet.</p>
+                    <h5 class="fw-bold">No materials uploaded yet</h5>
+                    <p class="text-muted small">Your lecturer has not added files for this course yet.</p>
                 </div>
             </div>
             <% } %>
