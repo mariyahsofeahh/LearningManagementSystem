@@ -46,6 +46,7 @@ public class AssignmentServlet extends HttpServlet {
         }
 
         String userId = (String) session.getAttribute("userId");
+        String userName = (String) session.getAttribute("userName");
         String userRole = (String) session.getAttribute("userRole");
 
         if (path.equals("/createPage")) {
@@ -116,6 +117,7 @@ public class AssignmentServlet extends HttpServlet {
         }
 
         String userId = (String) session.getAttribute("userId");
+        String userName = (String) session.getAttribute("userName");
         String userRole = (String) session.getAttribute("userRole");
 
         if (path == null) {
@@ -136,7 +138,7 @@ public class AssignmentServlet extends HttpServlet {
             a.setDescription(request.getParameter("description"));
             a.setDeadline(request.getParameter("deadline"));
             a.setLecturerId(userId);
-
+            a.setLecturerName(userName);
             if (assignmentService.createAssignment(a)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode);
             } else {
@@ -181,7 +183,7 @@ public class AssignmentServlet extends HttpServlet {
                     = getServletContext().getRealPath("")
                     + File.separator
                     + "uploads";
-
+            System.out.println("UPLOAD PATH: " + uploadPath);
             File uploadDir = new File(uploadPath);
 
             if (!uploadDir.exists()) {
@@ -198,6 +200,10 @@ public class AssignmentServlet extends HttpServlet {
                     + File.separator
                     + fileName);
 
+            System.out.println("FILE SAVED: "
+                    + uploadPath
+                    + File.separator
+                    + fileName);
             String fileUrl
                     = request.getContextPath()
                     + "/uploads/"
@@ -207,6 +213,7 @@ public class AssignmentServlet extends HttpServlet {
 
             s.setAssignmentId(assignmentId);
             s.setStudentId(userId);
+            s.setStudentName(userName);
             s.setStudentFileUrl(fileUrl);
 
             if (submissionService.submitWork(s)) {

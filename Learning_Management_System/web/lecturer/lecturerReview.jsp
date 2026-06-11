@@ -31,12 +31,13 @@
 
             <div class="row g-4">
                 <% if (submissions != null && !submissions.isEmpty()) {
-                for (Submission sub : submissions) {%>
+                        for (Submission sub : submissions) {%>
                 <div class="col-md-6">
                     <div class="card shadow-sm border-0 rounded-4 p-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0 text-secondary">Student ID: <%= sub.getStudentId()%></h5>
-                            <span class="badge <%= "Pending".equals(sub.getGrade()) ? "bg-warning text-dark" : "bg-success"%>">
+                            <h5 class="fw-bold mb-0 text-secondary">
+                                Student: <%= sub.getStudentName()%>
+                            </h5>                            <span class="badge <%= "Pending".equals(sub.getGrade()) ? "bg-warning text-dark" : "bg-success"%>">
                                 Status: <%= sub.getGrade()%>
                             </span>
                         </div>
@@ -66,7 +67,7 @@
                     </div>
                 </div>
                 <%  }
-        } else { %>
+                } else { %>
                 <div class="col-12 text-center p-5 card border-0 rounded-4 shadow-sm">
                     <p class="text-muted mb-0">No active student submission streaming payloads detected in pipeline cluster.</p>
                 </div>

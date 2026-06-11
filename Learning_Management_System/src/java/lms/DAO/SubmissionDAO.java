@@ -52,6 +52,7 @@ public class SubmissionDAO {
                         eq("_id", existingSubmission.getObjectId("_id")),
                         combine(
                                 set("student_file_url", submission.getStudentFileUrl()),
+                                set("studentName", submission.getStudentName()),
                                 set("grade", "Pending"),
                                 set("feedback", "")
                         )
@@ -67,6 +68,9 @@ public class SubmissionDAO {
                     .append(
                             "student_id",
                             submission.getStudentId())
+                    .append(
+                            "studentName",
+                            submission.getStudentName())
                     .append(
                             "student_file_url",
                             submission.getStudentFileUrl())
@@ -115,7 +119,8 @@ public class SubmissionDAO {
 
                 s.setStudentId(
                         doc.getString("student_id"));
-
+                s.setStudentName(
+                        doc.getString("studentName"));
                 s.setStudentFileUrl(
                         doc.getString(
                                 "student_file_url"));
@@ -195,7 +200,9 @@ public class SubmissionDAO {
                 s.setStudentId(
                         doc.getString(
                                 "student_id"));
-
+                s.setStudentName(
+                        doc.getString(
+                                "studentName"));
                 s.setStudentFileUrl(
                         doc.getString(
                                 "student_file_url"));
