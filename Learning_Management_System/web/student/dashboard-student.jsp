@@ -70,7 +70,7 @@
                 
                 <div class="input-group" style="max-width: 350px;">
                     <span class="input-group-text bg-white border-end-0 text-muted rounded-start-3"><i class="bi bi-key"></i></span>
-                    <input type="text" name="classCode" class="form-control border-start-0 bg-white" placeholder="Enter Class Code (e.g. ddc26c)" required>
+                    <input type="text" name="classCode" class="form-control border-start-0 bg-white" placeholder="Enter Class Code (e.g. CSF 3433)" required>
                 </div>
                 <button type="submit" class="btn btn-success rounded-3 px-4 fw-medium">Join Class</button>
             </form>
