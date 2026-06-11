@@ -43,17 +43,22 @@
                     <div class="card border-0 shadow-sm rounded-4 h-100">
                         <div class="card-body p-4">
                             <h2 class="h5 fw-bold mb-3">Submit Assignment</h2>
-                            <form action="${pageContext.request.contextPath}/assignment/submit" method="post">
-                                <input type="hidden" name="assignmentId" value="<%= assignment.getId()%>">
+                            <form action="${pageContext.request.contextPath}/assignment/submit"
+                                  method="post"
+                                  enctype="multipart/form-data">                                <input type="hidden" name="assignmentId" value="<%= assignment.getId()%>">
                                 <input type="hidden" name="courseCode" value="<%= assignment.getCourseCode()%>">
                                 <div class="mb-3">
-                                    <label class="form-label">Submission file link</label>
-                                    <input type="url"
-                                           name="studentFileUrl"
+                                    <label class="form-label">Upload PDF File</label>
+
+                                    <input type="file"
+                                           name="pdfFile"
                                            class="form-control"
-                                           placeholder="https://drive.google.com/..."
-                                           value="<%= submission != null && submission.getStudentFileUrl() != null ? submission.getStudentFileUrl() : ""%>">
-                                    <div class="form-text">Paste a file link. If left empty, the system will create a simulated cloud file URL.</div>
+                                           accept=".pdf"
+                                           required>
+
+                                    <div class="form-text">
+                                        Only PDF files are allowed.
+                                    </div>
                                 </div>
                                 <button type="submit" class="btn btn-primary px-4">Submit Work</button>
                             </form>

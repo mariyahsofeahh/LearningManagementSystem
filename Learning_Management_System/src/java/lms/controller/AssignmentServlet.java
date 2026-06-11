@@ -8,13 +8,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+import java.io.File;
 
 import lms.model.Assignment;
 import lms.model.Submission;
 import lms.service.AssignmentService;
 import lms.service.SubmissionService;
+import javax.servlet.annotation.MultipartConfig;
 
 @WebServlet("/assignment/*")
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class AssignmentServlet extends HttpServlet {
 
     private final AssignmentService assignmentService = new AssignmentService();
@@ -136,31 +144,87 @@ public class AssignmentServlet extends HttpServlet {
             }
 
         } else if (path.equals("/submit")) {
+
             String assignmentId = request.getParameter("assignmentId");
             String courseCode = request.getParameter("courseCode");
 
             if (assignmentId == null || assignmentId.trim().isEmpty()
                     || courseCode == null || courseCode.trim().isEmpty()) {
-                response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=missingassignment");
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/DashboardServlet?error=missingassignment");
                 return;
             }
 
-            String fileUrl = request.getParameter("studentFileUrl");
-            if (fileUrl == null || fileUrl.trim().isEmpty()) {
-                fileUrl = "https://lms-bucket.s3.amazonaws.com/submissions/" + userId + "_" + assignmentId + ".pdf";
+            Part pdfPart = request.getPart("pdfFile");
+
+            if (pdfPart == null || pdfPart.getSize() == 0) {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/DashboardServlet?error=nofile");
+                return;
             }
+
+            String contentType = pdfPart.getContentType();
+
+            if (!"application/pdf".equals(contentType)) {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/DashboardServlet?error=onlypdfallowed");
+                return;
+            }
+
+            String uploadPath
+                    = getServletContext().getRealPath("")
+                    + File.separator
+                    + "uploads";
+
+            File uploadDir = new File(uploadPath);
+
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+
+            String fileName
+                    = userId + "_"
+                    + assignmentId
+                    + ".pdf";
+
+            pdfPart.write(
+                    uploadPath
+                    + File.separator
+                    + fileName);
+
+            String fileUrl
+                    = request.getContextPath()
+                    + "/uploads/"
+                    + fileName;
 
             Submission s = new Submission();
+
             s.setAssignmentId(assignmentId);
             s.setStudentId(userId);
-            s.setStudentFileUrl(fileUrl.trim());
+            s.setStudentFileUrl(fileUrl);
 
             if (submissionService.submitWork(s)) {
-                response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&success=submitted");
-            } else {
-                response.sendRedirect(request.getContextPath() + "/DashboardServlet?courseId=" + courseCode + "&error=failed");
-            }
 
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/DashboardServlet?courseId="
+                        + courseCode
+                        + "&success=submitted");
+
+            } else {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/DashboardServlet?courseId="
+                        + courseCode
+                        + "&error=failed");
+            }
         } else if (path.equals("/grade")) {
             if (!"lecturer".equalsIgnoreCase(userRole)) {
                 response.sendRedirect(request.getContextPath() + "/DashboardServlet?error=unauthorized");
