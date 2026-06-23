@@ -9,7 +9,7 @@ public class Submission {
     private String submissionId;
     private String assignmentId;
     private String studentId;
-
+    private String studentName;
     private String studentFileUrl;
 
     private String grade;
@@ -64,5 +64,13 @@ public class Submission {
 
     public void setFeedback(String feedback) {
         this.feedback = feedback;
+    }
+
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public void setStudentName(String studentName) {
+        this.studentName = studentName;
     }
 }

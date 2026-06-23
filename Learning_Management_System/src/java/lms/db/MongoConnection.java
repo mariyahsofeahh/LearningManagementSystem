@@ -8,9 +8,12 @@ package lms.db;
  *
  * @author ASUS
  */
+//import MongoDB Library
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,10 +26,10 @@ public class MongoConnection {
     private static MongoClient mongoClient = null;
     private static MongoDatabase database = null;
 
-    // 1. Your exact MongoDB Atlas Cloud Connection URL (No local installation needed)
+    // 1.MongoDB Atlas Cloud Connection URL (No local installation needed)
     private static final String CONNECTION_URI = "mongodb+srv://LMSUser:lms123@lmscluster.mr9nhmp.mongodb.net/?appName=LMSCluster";
     
-    // 2. The name of the specific database inside your cloud cluster
+    // 2. The name of the specific database inside cloud cluster
     private static final String DATABASE_NAME = "lms_database"; 
 
     /**
@@ -42,6 +45,7 @@ public class MongoConnection {
                 System.out.println("Connecting to MongoDB Atlas Cloud Cluster...");
                 
                 // Establish the secure connection bridge across the internet to Atlas
+                // connect to Atlas
                 mongoClient = MongoClients.create(CONNECTION_URI);
                 
                 // Select the target database schema

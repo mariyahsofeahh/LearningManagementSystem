@@ -13,13 +13,16 @@ import lms.model.Assignment;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-
 public class AssignmentDAO {
 
+    // Represents the MongoDB collection object for assignment records
     private final MongoCollection<Document> collection;
 
     public AssignmentDAO() {
+        //Connectt to MongoDB Atlas database
         MongoDatabase db = MongoConnection.getDatabase();
+        
+        //access the assignments collection
         this.collection = db.getCollection("assignments");
     }
 
@@ -34,7 +37,7 @@ public class AssignmentDAO {
                     .append("file_path", a.getFilePath())
                     .append("deadline", a.getDeadline())
                     .append("lecturer_id", a.getLecturerId())
-                    .append("created_at", new Date());
+                    .append("lecturerName", a.getLecturerName()).append("created_at", new Date());
 
             collection.insertOne(doc);
             return true;
@@ -126,6 +129,7 @@ public class AssignmentDAO {
         assignment.setFilePath(doc.getString("file_path"));
         assignment.setDeadline(doc.getString("deadline"));
         assignment.setLecturerId(doc.getString("lecturer_id"));
+        assignment.setLecturerName(doc.getString("lecturerName"));
         assignment.setCreatedAt(formatDate(doc.get("created_at")));
 
         return assignment;

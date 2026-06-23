@@ -16,12 +16,20 @@ import org.bson.Document;
 
 public class CourseDAO {
 
+    //MongoDB collection for course information
     private final MongoCollection<Document> courseCollection;
+
+    // MongoDB collection for student enrollment records
     private final MongoCollection<Document> enrollmentCollection;
 
     public CourseDAO() {
+        // Get MongoDB Atlas database connection
         MongoDatabase db = MongoConnection.getDatabase();
+
+        // Access courses collection
         this.courseCollection = db.getCollection("courses");
+
+        // Access enrollments collection
         this.enrollmentCollection = db.getCollection("enrollments");
     }
 
@@ -41,7 +49,7 @@ public class CourseDAO {
     // Retrieve courses managed by a specific lecturer
     public List<Course> getCoursesByLecturer(String lecturerId) {
         List<Course> list = new ArrayList<>();
-        
+
         try (MongoCursor<Document> cursor = courseCollection.find(eq("lecturer_id", lecturerId)).iterator()) {
             while (cursor.hasNext()) {
                 Document doc = cursor.next();
@@ -88,13 +96,13 @@ public class CourseDAO {
         try {
             Document doc = new Document()
                     // 🔑 Use a clear separate field for the unique join/class code token
-                    .append("class_code", course.getCourseCode().trim().toLowerCase()) 
+                    .append("class_code", course.getCourseCode().trim().toLowerCase())
                     // 📚 Keep the structural academic curriculum code separate
-                    .append("course_code", course.getCourseCode().trim()) 
+                    .append("course_code", course.getCourseCode().trim())
                     .append("title", course.getTitle().trim())
                     .append("description", course.getDescription().trim())
                     .append("lecturer_id", course.getLecturerId());
-        
+
             courseCollection.insertOne(doc);
             return true;
         } catch (Exception e) {
@@ -102,15 +110,16 @@ public class CourseDAO {
             return false;
         }
     }
+
     // Update an existing course details block
     public boolean updateCourse(Course course) {
         try {
             courseCollection.updateOne(
-                eq("course_code", course.getCourseCode()),
-                combine(
-                    set("title", course.getTitle()),
-                    set("description", course.getDescription())
-                )
+                    eq("course_code", course.getCourseCode()),
+                    combine(
+                            set("title", course.getTitle()),
+                            set("description", course.getDescription())
+                    )
             );
             return true;
         } catch (Exception e) {
@@ -124,7 +133,7 @@ public class CourseDAO {
         try {
             Document courseDoc = courseCollection.find(eq("course_code", courseCode)).first();
             if (courseDoc == null) {
-                return false; 
+                return false;
             }
 
             Document enrollment = new Document()
@@ -144,7 +153,7 @@ public class CourseDAO {
         try {
             // 1. Remove the course from the courses collection
             long deletedCourses = courseCollection.deleteOne(eq("course_code", courseCode)).getDeletedCount();
-            
+
             if (deletedCourses > 0) {
                 // 2. Cascading delete: Remove all student enrollment records tied to this course code
                 enrollmentCollection.deleteMany(eq("course_code", courseCode));
@@ -156,18 +165,18 @@ public class CourseDAO {
             return false;
         }
     }
-    
+
     // 🌟 FIXED: Native MongoDB Student Unenrollment Logic
     public boolean unenrollStudent(String studentId, String courseCode) {
         try {
             // Find and delete the record where both student_id AND course_code match
             long deletedEnrollments = enrollmentCollection.deleteOne(
-                and(
-                    eq("student_id", studentId),
-                    eq("course_code", courseCode)
-                )
+                    and(
+                            eq("student_id", studentId),
+                            eq("course_code", courseCode)
+                    )
             ).getDeletedCount();
-            
+
             return deletedEnrollments > 0;
         } catch (Exception e) {
             e.printStackTrace();
