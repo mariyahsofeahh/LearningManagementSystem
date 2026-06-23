@@ -17,10 +17,15 @@ import org.bson.Document;
 
 public class UserDAO {
 
+    //represent the MongoDB collection object for storing user documents
     private final MongoCollection<Document> collection;
 
+    
     public UserDAO() {
+        //Get the MongoDB Atlas database connection
         MongoDatabase db = MongoConnection.getDatabase();
+        
+        //Access the "users" collection inside lms_database
         this.collection = db.getCollection("users");
     }
 

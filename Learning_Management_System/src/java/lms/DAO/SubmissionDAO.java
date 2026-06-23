@@ -26,13 +26,16 @@ import static com.mongodb.client.model.Filters.and;
 
 public class SubmissionDAO {
 
+    //represents the MongoaDB collection object for student submissions
     private final MongoCollection<Document> collection;
 
     public SubmissionDAO() {
 
+        //obtain database-connection from MongoConnection
         MongoDatabase db
                 = MongoConnection.getDatabase();
 
+        //Access submissions collection
         this.collection
                 = db.getCollection("submissions");
     }

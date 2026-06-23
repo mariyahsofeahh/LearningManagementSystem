@@ -15,10 +15,14 @@ import org.bson.types.ObjectId;
 
 public class AssignmentDAO {
 
+    // Represents the MongoDB collection object for assignment records
     private final MongoCollection<Document> collection;
 
     public AssignmentDAO() {
+        //Connectt to MongoDB Atlas database
         MongoDatabase db = MongoConnection.getDatabase();
+        
+        //access the assignments collection
         this.collection = db.getCollection("assignments");
     }
 
